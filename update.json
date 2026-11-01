@@ -1,0 +1,10 @@
+{
+  "version": "0.9.7",
+  "build": 97,
+  "minimumMacOS": "12.0",
+  "releaseNotes": "CCAP version 0.9.7",
+  "downloadURLAppleSilicon": "",
+  "sha256AppleSilicon": "a33d54e7944b690e1e9236b322591f20c09e7f1a2c2bca5df77b0cad714686f0",
+  "downloadURLIntel": "",
+  "sha256Intel": ""
+}
