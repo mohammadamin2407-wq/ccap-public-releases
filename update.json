@@ -1,10 +1,10 @@
 {
-  "version": "0.9.9",
-  "build": 99,
+  "version": "0.9.10",
+  "build": 100,
   "minimumMacOS": "12.0",
-  "releaseNotes": "CCAP version 0.9.9 - One Click Updater",
-  "downloadURLAppleSilicon": "https://github.com/mohammadamin2407-wq/ccap-public-releases/releases/download/v0.9.9/Crypto-Capital-Dashboard-macOS-arm64.dmg",
-  "sha256AppleSilicon": "a65b32eae40700aa1f2a30855accd03c24fa13009d0d33b3df245f6bd8343b18",
+  "releaseNotes": "CCAP version 0.9.10 - Updater Test",
+  "downloadURLAppleSilicon": "https://github.com/mohammadamin2407-wq/ccap-public-releases/releases/download/v0.9.10/Crypto-Capital-Dashboard-macOS-arm64.dmg",
+  "sha256AppleSilicon": "ab6ded2b9d942448a700d9d2c93eea37adb213f1e9edf19e5fddbba13960fb1a",
   "downloadURLIntel": "",
   "sha256Intel": ""
 }
