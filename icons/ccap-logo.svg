@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+<defs>
+ <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1830"/><stop offset="1" stop-color="#070d1c"/></linearGradient>
+ <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#91b5f4"/><stop offset=".48" stop-color="#7378df"/><stop offset="1" stop-color="#5d4fc4"/></linearGradient>
+ <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d7e5ff"/><stop offset="1" stop-color="#b7a9ff"/></linearGradient>
+ <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+</defs>
+<rect width="180" height="180" fill="url(#bg)"/>
+<rect x="23" y="49" width="134" height="108" rx="42" fill="#222b58" opacity=".5" filter="url(#shadow)"/>
+<rect x="25" y="50" width="130" height="106" rx="42" fill="url(#tile)" stroke="url(#edge)" stroke-width="3"/>
+<path d="M125 79c-8-8-18-12-31-12-25 0-41 17-41 41s16 41 41 41c13 0 24-5 32-14l-14-13c-5 6-10 9-18 9-13 0-21-9-21-23s8-23 21-23c8 0 13 3 18 9z" fill="#fff"/>
+</svg>
