@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.17 · Glass UI</title>
+<title>CCAP v0.9.18 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -201,7 +201,7 @@ button,input,select,textarea{font:inherit}
   <div class="table-wrap"><table><thead><tr><th>ارز</th><th>قیمت فعلی</th><th>گام قیمت</th><th>حمایت نزدیک</th><th>مقاومت نزدیک</th><th>عبور صعودی</th><th>عبور نزولی</th><th>منبع</th></tr></thead><tbody id="bandAssetRows"><tr><td colspan="8" class="empty">پس از اسکن بازار، داده‌ها نمایش داده می‌شوند.</td></tr></tbody></table></div>
   <div class="card-head" style="margin-top:17px"><div><h2 id="bandDetailTitle">جزئیات پله‌های قیمت</h2><div class="sub" id="bandDetailSubtitle">برای مشاهده سطح‌های یک ارز، روی نماد آن کلیک کن.</div></div></div>
   <div class="table-wrap"><table><thead><tr><th>سطح قیمت</th><th>نوع سطح</th><th>تعداد برخورد</th><th>عبور رو به بالا</th><th>عبور رو به پایین</th><th>واکنش خریدار / فروشنده</th><th>قدرت نسبی</th></tr></thead><tbody id="bandLevelRows"><tr><td colspan="7" class="empty">هنوز سطحی محاسبه نشده است.</td></tr></tbody></table></div>
-  <div class="market-note" style="margin-top:10px">BTC و ETH با فاصله دقیق ۱۰ یا ۲۰ USDT تحلیل می‌شوند. DOGE با ۰٫۰۰۱ یا ۰٫۰۰۲، BNB با ۱ یا ۲، SOL با ۰٫۵ یا ۱ و ارزهای کم‌قیمت با گام اعشاری متناسب بررسی می‌شوند. شمارش برخوردها بر اساس کندل‌های بسته‌شده ۱۵ دقیقه‌ای در حدود ۳۰ ساعت اخیر است؛ داده CoinPaprika فقط از زمان شروع پایش محلی قابل شمارش است.</div>
+  <div class="market-note" style="margin-top:10px">۲۰ ارز اصلی شامل BTC، ETH، BNB، SOL، XRP، DOGE، ADA، LINK، AVAX، LTC، DOT، TRX، BCH، UNI، NEAR، APT، SUI، ARB، OP و FIL پایش می‌شوند. برای هر ارز گام متناسب تعریف شده و حالت ۱۰/۲۰ اندازه پله را تغییر می‌دهد. تحلیل می‌شوند. DOGE با ۰٫۰۰۱ یا ۰٫۰۰۲، BNB با ۱ یا ۲، SOL با ۰٫۵ یا ۱ و ارزهای کم‌قیمت با گام اعشاری متناسب بررسی می‌شوند. شمارش برخوردها بر اساس کندل‌های بسته‌شده ۱۵ دقیقه‌ای در حدود ۳۰ ساعت اخیر است؛ داده CoinPaprika فقط از زمان شروع پایش محلی قابل شمارش است.</div>
  </div>
 </section>
 
@@ -293,8 +293,8 @@ document.getElementById('parseBtn').onclick=()=>{let txt=document.getElementById
 
 // Live market scanner: public Binance market data only; no keys and no trading permissions.
 const scannerState={rows:[],filter:'all',selected:null,timer:null,auto:false,universe:[],apiBase:null,provider:null,majorRows:[],selectedBand:'BTC',marketShowAll:false};
-const majorSymbols=['BTC','ETH','DOGE','BNB','SOL','XRP','ADA','LINK','AVAX','LTC'];
-const bandStepProfiles={BTC:{10:10,20:20},ETH:{10:10,20:20},DOGE:{10:0.001,20:0.002},BNB:{10:1,20:2},SOL:{10:0.5,20:1},XRP:{10:0.005,20:0.01},ADA:{10:0.0025,20:0.005},LINK:{10:0.1,20:0.2},AVAX:{10:0.1,20:0.2},LTC:{10:0.5,20:1}};
+const majorSymbols=['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','LINK','AVAX','LTC','DOT','TRX','BCH','UNI','NEAR','APT','SUI','ARB','OP','FIL'];
+const bandStepProfiles={BTC:{10:10,20:20},ETH:{10:10,20:20},DOGE:{10:0.001,20:0.002},BNB:{10:1,20:2},SOL:{10:0.5,20:1},XRP:{10:0.005,20:0.01},ADA:{10:0.0025,20:0.005},LINK:{10:0.1,20:0.2},AVAX:{10:0.1,20:0.2},LTC:{10:0.5,20:1},DOT:{10:0.025,20:0.05},TRX:{10:0.001,20:0.002},BCH:{10:1,20:2},UNI:{10:0.05,20:0.1},NEAR:{10:0.02,20:0.04},APT:{10:0.025,20:0.05},SUI:{10:0.01,20:0.02},ARB:{10:0.005,20:0.01},OP:{10:0.01,20:0.02},FIL:{10:0.025,20:0.05}};
 const signalState={events:[],last:{},archive:[]};
 const SIGNAL_EVENTS_KEY='capitalDesk.signalEvents.v06';
 const SIGNAL_LAST_KEY='capitalDesk.signalLast.v06';
