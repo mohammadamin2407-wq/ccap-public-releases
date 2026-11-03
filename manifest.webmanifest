@@ -2,18 +2,25 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.15 — داشبورد فارسی تحلیل بازار، Strategy Lab، Order Flow، CVD و تشخیص واگرایی، نمودار کندلی و مدیریت سرمایه.",
+  "description": "CCAP v0.9.16 — داشبورد فارسی تحلیل بازار، Strategy Lab، Order Flow، CVD و تشخیص واگرایی، نمودار کندلی و مدیریت سرمایه.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#070b13",
   "theme_color": "#070b13",
   "icons": [
-    {"src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {
+      "src": "./icons/ccap-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
   ]
 }
