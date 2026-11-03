@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.13 · Glass UI</title>
+<title>CCAP v0.9.14 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -89,6 +89,15 @@ button,input,select,textarea{font:inherit}
 .signal-history-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}.signal-history-toolbar select{border:1px solid var(--line);background:rgba(6,13,24,.68);color:var(--text);padding:9px 12px;border-radius:10px}.signal-history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}.signal-history-stat{padding:10px;border:1px solid rgba(174,198,235,.12);border-radius:11px;background:rgba(255,255,255,.035)}.signal-history-stat small{display:block;color:var(--muted);font-size:10px}.signal-history-stat b{display:block;font-size:19px;margin-top:3px}.signal-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid rgba(75,224,173,.22);background:rgba(35,125,91,.07);border-radius:12px;margin-bottom:8px}.signal-history-row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.signal-history-row .btn{padding:6px 9px;font-size:10px}.signal-history-price{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#cbd9ec}.signal-history-price span{direction:ltr}.signal-history-badge{display:inline-block;border-radius:7px;padding:3px 7px;font-size:10px;color:#8aefc9;background:rgba(75,224,173,.12);border:1px solid rgba(75,224,173,.25)}@media(max-width:700px){.signal-history-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.signal-history-row{grid-template-columns:1fr}.signal-history-row .btn{justify-self:start}}
 
 /* Strategy Lab */
+/* Order flow, CVD and pivot divergence */
+.flow-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.flow-card{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035);padding:12px}
+.flow-card small{display:block;color:var(--muted);font-size:10px}.flow-card b{display:block;font-size:17px;margin-top:5px}
+.flow-bars{height:9px;display:flex;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.08);margin-top:9px}
+.flow-bars i:first-child{background:var(--green)}.flow-bars i:last-child{background:var(--red)}
+.flow-state{font-size:11px;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:rgba(255,255,255,.025)}
+@media(max-width:700px){.flow-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 .strategy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .strategy-option{border:1px solid var(--line);border-radius:13px;padding:12px;background:rgba(255,255,255,.025)}
 .strategy-option label{display:flex;gap:8px;align-items:center;font-size:12px}
@@ -128,7 +137,7 @@ button,input,select,textarea{font:inherit}
 
 <section class="section" id="market">
  <div class="card">
-  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۳ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.13</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
+  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۴ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.14</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
   <div class="market-toolbar">
    <label class="sub">منبع داده</label><select id="marketSource"><option value="auto" selected>خودکار · Bybit ← KuCoin ← Gate.io ← Binance ← CoinPaprika</option><option value="bybit">Bybit USDT Perpetual</option><option value="kucoin">KuCoin USDT Futures</option><option value="gate">Gate.io USDT Futures</option><option value="futures">Binance USDⓈ-M Futures</option><option value="spot">Binance Spot</option><option value="coinpaprika">CoinPaprika · داده تجمیعی بازار</option></select>
    <label class="sub">حداقل حجم ۲۴ساعته</label><select id="minVolume"><option value="1000" selected>۱٬۰۰۰ دلار / USDT</option><option value="2000">۲٬۰۰۰ دلار / USDT</option><option value="5000">۵٬۰۰۰ دلار / USDT</option><option value="10000">۱۰٬۰۰۰ دلار / USDT</option><option value="25000">۲۵٬۰۰۰ دلار / USDT</option><option value="50000">۵۰٬۰۰۰ دلار / USDT</option><option value="100000">۱۰۰٬۰۰۰ دلار / USDT</option><option value="500000">۵۰۰٬۰۰۰ دلار / USDT</option><option value="1000000">۱ میلیون دلار / USDT</option><option value="5000000">۵ میلیون دلار / USDT</option><option value="10000000">۱۰ میلیون دلار / USDT</option><option value="25000000">۲۵ میلیون دلار / USDT</option><option value="50000000">۵۰ میلیون دلار / USDT</option></select>
@@ -229,6 +238,22 @@ button,input,select,textarea{font:inherit}
   <div class="card"><div class="card-head"><h2>منطق و شواهد تحلیل</h2><span class="sub" id="strategyDataQuality">داده هنوز دریافت نشده</span></div><div class="strategy-reasons" id="strategyReasons"><div>پس از دریافت کندل‌ها، دلایل تأیید و رد سیگنال اینجا نمایش داده می‌شوند.</div></div></div>
   <div class="card"><div class="card-head"><h2>طرح معاملاتی آزمایشی</h2><span class="sub">بدون ثبت سفارش واقعی</span></div><div class="metric-grid"><div class="metric"><small>قیمت مرجع</small><b id="strategyEntry">—</b></div><div class="metric"><small>حد ضرر ساختاری</small><b id="strategyStop">—</b></div><div class="metric"><small>هدف اول · 1R</small><b id="strategyTarget1">—</b></div><div class="metric"><small>هدف دوم · 2R</small><b id="strategyTarget2">—</b></div></div><p class="market-note" id="strategyPlanNote">این مقادیر پس از تحلیل محاسبه می‌شوند. تا زمان تأیید ساختار، سیگنال صادر نمی‌شود.</p></div>
  </div>
+ 
+<div class="card" style="margin-top:15px" id="orderFlowCenter">
+ <div class="card-head"><div><h2>Order Flow · CVD · Divergence</h2><div class="sub">داده معاملات تجمیعی و دفتر سفارش Binance USDⓈ-M Futures · مستقل از امتیاز کندلی</div></div><span class="pill" id="flowStatus">غیرفعال تا اجرای تحلیل</span></div>
+ <div class="market-toolbar" style="margin-bottom:12px"><label class="sub">بازه محاسبه جریان سفارش</label><select id="flowWindow"><option value="300">حدود ۵ دقیقه اخیر</option><option value="900" selected>حدود ۱۵ دقیقه اخیر</option><option value="3600">حدود ۱ ساعت اخیر</option></select><span class="sub">نماد و منبع از تنظیمات Strategy Lab خوانده می‌شوند.</span></div>
+ <div class="flow-grid">
+  <div class="flow-card"><small>خالص CVD (USDT)</small><b id="flowCvd">—</b><div class="flow-bars"><i id="flowBuyBar" style="width:50%"></i><i id="flowSellBar" style="width:50%"></i></div></div>
+  <div class="flow-card"><small>نسبت خرید تهاجمی</small><b id="flowBuyRatio">—</b><div class="sub" id="flowTradeCount">تعداد معاملات: —</div></div>
+  <div class="flow-card"><small>عدم‌تعادل دفتر سفارش</small><b id="flowImbalance">—</b><div class="sub" id="flowSpread">Spread: —</div></div>
+  <div class="flow-card"><small>واگرایی قیمت / RSI</small><b id="flowRsiDiv">—</b><div class="sub" id="flowRsiDetail">پیوت‌های تأییدشده</div></div>
+  <div class="flow-card"><small>واگرایی قیمت / CVD</small><b id="flowCvdDiv">—</b><div class="sub" id="flowCvdDetail">پیوت‌های تأییدشده</div></div>
+  <div class="flow-card"><small>کیفیت داده</small><b id="flowQuality">—</b><div class="sub" id="flowUpdated">—</div></div>
+ </div>
+ <div class="card-head" style="margin-top:14px"><h2>تفسیر جریان سفارش</h2></div>
+ <div class="strategy-reasons" id="flowReasons"><div>برای دریافت داده واقعی، منبع Binance Futures را انتخاب و تحلیل را اجرا کن.</div></div>
+ <div class="notice">CVD از معاملات تجمیعی قابل‌دریافت در بازه انتخابی محاسبه می‌شود و از ابتدای بازه/داده دریافتی انباشته می‌شود؛ تاریخچه کامل روزانه نیست. عدم‌تعادل دفتر سفارش فقط snapshot عمق فعلی است و سفارش‌های لغوشده یا پنهان را نشان نمی‌دهد. واگرایی پس از تأیید پیوت (با تأخیر چند کندل) گزارش می‌شود و به‌تنهایی سیگنال ورود نیست.</div>
+</div>
  <div class="notice">این موتور ابزار تحلیل است، نه تضمین سود. داده‌های Order Flow واقعی، دفتر سفارش تاریخی و VWAP حجمی دقیق ممکن است در بعضی منابع در دسترس نباشند؛ در این نسخه از داده کندل و حجم قابل‌دسترسی استفاده می‌شود و موارد فاقد داده به‌عنوان تأییدشده فرض نمی‌شوند.</div>
 </section>
 <section class="section" id="import"><div class="grid import-grid"><div class="card"><h2>مرکز ورود اطلاعات</h2><p class="sub">منبع و نوع داده را انتخاب کن.</p><div class="field"><label>صرافی</label><select id="exchange"><option>KCEX</option><option>Binance</option><option>Gate.io</option><option>Bybit</option><option>Other</option></select></div><div class="field"><label>نوع اطلاعات</label><select id="dataType"><option value="capital">Capital Flow (متن)</option><option value="positions">Position History (CSV)</option><option value="orders">Order History (CSV)</option><option value="deposits">Deposit / Withdrawal (CSV)</option><option value="other">سایر اطلاعات</option></select></div><div class="drop"><input type="file" id="fileInput" accept=".csv,.txt,.json" style="max-width:100%"><br>فایل CSV، TXT یا JSON</div><div class="notice">این نسخه فایل تصویری را مستقیماً OCR نمی‌کند. برای تصاویر، فعلاً متن استخراج‌شده را در کادر کناری جای‌گذاری کن.</div></div><div class="card"><div class="card-head"><div><h2>Paste Data</h2><div class="sub">متن کپی‌شده از KCEX را اینجا قرار بده</div></div><button class="btn" id="clearText">پاک کردن</button></div><div class="field"><textarea id="pasteArea" placeholder="نمونه:&#10;2026-08-05&#10;20:33:30 USDT ETH/USDT Closing PNL -49.56&#10;2026-08-05&#10;20:33:30 USDT ETH/USDT Fee -0.23"></textarea></div><div class="actions"><button class="btn primary" id="parseBtn">تحلیل و ثبت اطلاعات</button><button class="btn" id="sampleBtn">بارگذاری نمونه Capital Flow</button></div><div id="importResult" class="sub" style="margin-top:14px"></div></div></div></section>
@@ -722,6 +747,53 @@ function stats(ks){
  const rsi=losses===0?100:100-100/(1+gains/14/(losses/14));
  return {a,c,last,prev,close:+last[4],high:+last[2],low:+last[3],ema20:ema(c.slice(-80),20),ema50:ema(c.slice(-100),50),ema200:ema(c,200),rsi,atr:tr.reduce((x,y)=>x+y,0)/tr.length,volRatio:avg?+last[7]/avg:0,rangeHigh:hi,rangeLow:lo,change:(+last[4]/(+last[1])-1)*100,body:Math.abs(+last[4]-+last[1]),bull:+last[4]>+last[1],breakUp:+last[4]>hi,breakDown:+last[4]<lo,wickUp:+last[2]-Math.max(+last[1],+last[4]),wickDown:Math.min(+last[1],+last[4])-+last[3]};
 }
+
+async function fetchOrderFlow(symbol,windowSec){
+ const base='https://fapi.binance.com';
+ const now=Date.now(),start=now-windowSec*1000;
+ const [trades,depth]=await Promise.all([
+  apiGet(base+'/fapi/v1/aggTrades?symbol='+encodeURIComponent(symbol)+'&limit=1000'),
+  apiGet(base+'/fapi/v1/depth?symbol='+encodeURIComponent(symbol)+'&limit=100')
+ ]);
+ if(!Array.isArray(trades)||!Array.isArray(depth?.bids)||!Array.isArray(depth?.asks))throw Error('ساختار پاسخ Order Flow معتبر نیست');
+ let buy=0,sell=0,buyCount=0,sellCount=0;
+ for(const t of trades){if(Number(t.T)<start)continue;const q=Number(t.q)*Number(t.p);if(!Number.isFinite(q))continue;if(t.m){sell+=q;sellCount++}else{buy+=q;buyCount++}}
+ const bid=depth.bids.slice(0,20).reduce((v,x)=>v+Number(x[0])*Number(x[1]),0),ask=depth.asks.slice(0,20).reduce((v,x)=>v+Number(x[0])*Number(x[1]),0);
+ const bestBid=Number(depth.bids[0]?.[0]),bestAsk=Number(depth.asks[0]?.[0]),mid=(bestBid+bestAsk)/2;
+ return {buy,sell,cvd:buy-sell,buyCount,sellCount,total:buy+sell,ratio:buy+sell?buy/(buy+sell):null,imbalance:bid+ask?(bid-ask)/(bid+ask):null,spread:mid?(bestAsk-bestBid)/mid*100:null,tradeCount:trades.length,depthTime:Date.now(),limited:trades.length>=1000};
+}
+function pivotPoints(values,left=3,right=3,kind='low'){
+ const out=[];for(let i=left;i<values.length-right;i++){const v=values[i];if(!Number.isFinite(v))continue;let ok=true;for(let j=i-left;j<=i+right;j++){if(j===i)continue;if(kind==='low'?values[j]<v:values[j]>v){ok=false;break}}if(ok)out.push({i,value:v})}return out;
+}
+function divergenceCheck(bars,osc){
+ const p=bars.map(k=>+k[4]),lows=pivotPoints(bars.map(k=>+k[3]),3,3,'low'),highs=pivotPoints(bars.map(k=>+k[2]),3,3,'high');
+ const ol=pivotPoints(osc,3,3,'low'),oh=pivotPoints(osc,3,3,'high');
+ const match=(pivs,opivs)=>pivs.map(p=>({...p,osc:opivs.find(o=>Math.abs(o.i-p.i)<=2)?.value})).filter(x=>Number.isFinite(x.osc));
+ const L=match(lows,ol),H=match(highs,oh);let bullish=false,bearish=false,detail=[];
+ if(L.length>=2){const a=L[L.length-2],b=L[L.length-1];if(b.value<a.value&&b.osc>a.osc){bullish=true;detail.push('واگرایی مثبت: کف قیمت پایین‌تر و کف اسیلاتور بالاتر')}} 
+ if(H.length>=2){const a=H[H.length-2],b=H[H.length-1];if(b.value>a.value&&b.osc<a.osc){bearish=true;detail.push('واگرایی منفی: سقف قیمت بالاتر و سقف اسیلاتور پایین‌تر')}}
+ return {bullish,bearish,detail};
+}
+function cumulativeDeltaFromBars(ks){let sum=0;return (ks||[]).map(k=>{const quote=Number(k[7]),takerBuyQuote=Number(k[10]);if(Number.isFinite(quote)&&Number.isFinite(takerBuyQuote))sum+=(2*takerBuyQuote-quote);return sum})}
+function renderOrderFlow(flow,rsiDiv,cvdDiv){
+ const safe=(id,v)=>{const n=el(id);if(n)n.textContent=v};
+ safe('flowCvd',flow?fmt(flow.cvd):'—');safe('flowBuyRatio',flow&&flow.ratio!=null?(flow.ratio*100).toFixed(1)+'%':'—');
+ safe('flowTradeCount',flow?'تعداد معاملات: '+flow.tradeCount+(flow.limited?' · سقف دریافت':''):'—');
+ safe('flowImbalance',flow&&flow.imbalance!=null?(flow.imbalance*100).toFixed(1)+'%':'—');
+ safe('flowSpread',flow&&flow.spread!=null?'Spread: '+flow.spread.toFixed(4)+'%':'Spread: —');
+ safe('flowRsiDiv',rsiDiv?(rsiDiv.bullish?'Bullish':rsiDiv.bearish?'Bearish':'بدون واگرایی'):'—');
+ safe('flowRsiDetail',rsiDiv?.detail.join(' · ')||'پیوت‌های تأییدشده');
+ safe('flowCvdDiv',cvdDiv?(cvdDiv.bullish?'Bullish':cvdDiv.bearish?'Bearish':'بدون واگرایی'):'—');
+ safe('flowCvdDetail',cvdDiv?.detail.join(' · ')||'پیوت‌های تأییدشده');
+ safe('flowQuality',flow?(flow.limited?'محدود':'قابل‌استفاده'):'—');safe('flowUpdated',flow?'بروزرسانی '+new Date().toLocaleTimeString():'—');
+ if(flow){const total=flow.buy+flow.sell,ratio=total?flow.buy/total:.5;el('flowBuyBar').style.width=(ratio*100)+'%';el('flowSellBar').style.width=((1-ratio)*100)+'%'}
+ const reasons=[];
+ if(flow){reasons.push('خرید تهاجمی: '+fmt(flow.buy)+' USDT · فروش تهاجمی: '+fmt(flow.sell)+' USDT');reasons.push('عدم‌تعادل عمق ۲۰ سطح اول: '+(flow.imbalance*100).toFixed(1)+'% (مثبت = عمق خرید بیشتر)');if(flow.limited)reasons.push('دریافت به سقف ۱۰۰۰ معامله رسیده؛ پنجره ممکن است کامل پوشش داده نشده باشد')}
+ if(rsiDiv?.detail.length)reasons.push(...rsiDiv.detail);if(cvdDiv?.detail.length)reasons.push(...cvdDiv.detail);
+ if(!reasons.length)reasons.push('داده Order Flow در دسترس نیست یا هنوز تحلیل اجرا نشده است');
+ el('flowReasons').innerHTML=reasons.map(x=>'<div>'+x.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>').join('');
+}
+
 function addScore(o,dir,n,why){o[dir]+=n;o.reasons.push(why)}
 function assess(all){
  const m=all['15m'],h=all['1h'],f=all['4h'],d=all['1d'],five=all['5m'];
@@ -769,7 +841,19 @@ async function run(){
   const entries=await Promise.all(intervals.map(async tf=>[tf,await fetchChartCandles(row,tf)]));
   const all=Object.fromEntries(entries.map(([tf,ks])=>[tf,stats(ks)]));
   const base=assess(all),mode=el('strategyMode').value,key=document.querySelector('input[name="strategyPick"]:checked')?.value||'trend';
+  if(provider!=='futures')throw Error('Order Flow، CVD و دفتر سفارش واقعی فعلاً فقط با منبع Binance USDⓈ-M Futures فعال است؛ برای داده معتبر این منبع را انتخاب کن.');
+  el('flowStatus').textContent='در حال دریافت معاملات و عمق دفتر سفارش…';
+  const flow=await fetchOrderFlow(symbol,Number(el('flowWindow').value));
+  const rsiDiv=divergenceCheck(all['15m'].a,all['15m'].a.map((k,i)=>{const a=all['15m'].a.slice(0,i+1).map(x=>+x[4]);return a.length>=15?rsi(a):null}));
+  const cvdSeries=cumulativeDeltaFromBars(all['15m'].a);
+  const cvdDiv=divergenceCheck(all['15m'].a,cvdSeries);
+  renderOrderFlow(flow,rsiDiv,cvdDiv);el('flowStatus').textContent='داده دریافت شد · Binance Futures';
+
   const selected=mode==='adaptive'? 'multi':key,manual=mode==='adaptive'?base:scoreManual(key,all,base);
+  if(flow.ratio!=null&&flow.total>0){if(flow.ratio>.56)addScore(manual,'long',Math.min(12,(flow.ratio-.5)*100),'CVD معاملات اخیر به نفع خریداران تهاجمی است');else if(flow.ratio<.44)addScore(manual,'short',Math.min(12,(.5-flow.ratio)*100),'CVD معاملات اخیر به نفع فروشندگان تهاجمی است')}
+  if(flow.imbalance>.12)addScore(manual,'long',5,'دفتر سفارش در snapshot فعلی به نفع عمق خرید است');else if(flow.imbalance<-.12)addScore(manual,'short',5,'دفتر سفارش در snapshot فعلی به نفع عمق فروش است');
+  if(rsiDiv.bullish)addScore(manual,'long',8,'واگرایی مثبت RSI با پیوت‌های تأییدشده');if(rsiDiv.bearish)addScore(manual,'short',8,'واگرایی منفی RSI با پیوت‌های تأییدشده');
+  if(cvdDiv.bullish)addScore(manual,'long',8,'واگرایی مثبت CVD با پیوت‌های تأییدشده');if(cvdDiv.bearish)addScore(manual,'short',8,'واگرایی منفی CVD با پیوت‌های تأییدشده');
   const long=manual.long,short=manual.short,score=Math.max(long,short),diff=Math.abs(long-short);
   let direction=score>=42&&diff>=15?(long>short?'LONG':'SHORT'):'WAIT';
   const m=all['15m'],entry=m.close,stop=direction==='LONG'?Math.min(m.rangeLow,m.close-1.25*m.atr):direction==='SHORT'?Math.max(m.rangeHigh,m.close+1.25*m.atr):null;
