@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.15 · Glass UI</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/ccap-logo.svg">
+<title>CCAP v0.9.16 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -137,7 +137,7 @@ button,input,select,textarea{font:inherit}
 
 <section class="section" id="market">
  <div class="card">
-  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۴ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.15</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
+  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۴ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.16</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
   <div class="market-toolbar">
    <label class="sub">منبع داده</label><select id="marketSource"><option value="auto" selected>خودکار · Bybit ← KuCoin ← Gate.io ← Binance ← CoinPaprika</option><option value="bybit">Bybit USDT Perpetual</option><option value="kucoin">KuCoin USDT Futures</option><option value="gate">Gate.io USDT Futures</option><option value="futures">Binance USDⓈ-M Futures</option><option value="spot">Binance Spot</option><option value="coinpaprika">CoinPaprika · داده تجمیعی بازار</option></select>
    <label class="sub">حداقل حجم ۲۴ساعته</label><select id="minVolume"><option value="1000" selected>۱٬۰۰۰ دلار / USDT</option><option value="2000">۲٬۰۰۰ دلار / USDT</option><option value="5000">۵٬۰۰۰ دلار / USDT</option><option value="10000">۱۰٬۰۰۰ دلار / USDT</option><option value="25000">۲۵٬۰۰۰ دلار / USDT</option><option value="50000">۵۰٬۰۰۰ دلار / USDT</option><option value="100000">۱۰۰٬۰۰۰ دلار / USDT</option><option value="500000">۵۰۰٬۰۰۰ دلار / USDT</option><option value="1000000">۱ میلیون دلار / USDT</option><option value="5000000">۵ میلیون دلار / USDT</option><option value="10000000">۱۰ میلیون دلار / USDT</option><option value="25000000">۲۵ میلیون دلار / USDT</option><option value="50000000">۵۰ میلیون دلار / USDT</option></select>
