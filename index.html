@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.12 · Glass UI</title>
+<title>CCAP v0.9.13 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -87,10 +87,24 @@ button,input,select,textarea{font:inherit}
 
 /* Successful signal history */
 .signal-history-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:10px 0 14px}.signal-history-toolbar select{border:1px solid var(--line);background:rgba(6,13,24,.68);color:var(--text);padding:9px 12px;border-radius:10px}.signal-history-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}.signal-history-stat{padding:10px;border:1px solid rgba(174,198,235,.12);border-radius:11px;background:rgba(255,255,255,.035)}.signal-history-stat small{display:block;color:var(--muted);font-size:10px}.signal-history-stat b{display:block;font-size:19px;margin-top:3px}.signal-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border:1px solid rgba(75,224,173,.22);background:rgba(35,125,91,.07);border-radius:12px;margin-bottom:8px}.signal-history-row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.signal-history-row .btn{padding:6px 9px;font-size:10px}.signal-history-price{display:flex;gap:12px;flex-wrap:wrap;margin-top:7px;font-size:11px;color:#cbd9ec}.signal-history-price span{direction:ltr}.signal-history-badge{display:inline-block;border-radius:7px;padding:3px 7px;font-size:10px;color:#8aefc9;background:rgba(75,224,173,.12);border:1px solid rgba(75,224,173,.25)}@media(max-width:700px){.signal-history-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.signal-history-row{grid-template-columns:1fr}.signal-history-row .btn{justify-self:start}}
+
+/* Strategy Lab */
+.strategy-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.strategy-option{border:1px solid var(--line);border-radius:13px;padding:12px;background:rgba(255,255,255,.025)}
+.strategy-option label{display:flex;gap:8px;align-items:center;font-size:12px}
+.strategy-option input{accent-color:#8ab7ff}
+.strategy-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.strategy-kpi{padding:11px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035)}
+.strategy-kpi small{display:block;color:var(--muted);font-size:10px}.strategy-kpi b{display:block;margin-top:5px;font-size:17px}
+.strategy-reasons{display:grid;gap:7px}.strategy-reasons div{padding:8px 10px;border-radius:9px;background:rgba(255,255,255,.035);font-size:11px}
+.strategy-tf{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.strategy-tf div{padding:9px 5px;text-align:center;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025)}
+.strategy-tf small{display:block;color:var(--muted);font-size:9px}.strategy-tf b{font-size:12px}
+@media(max-width:700px){.strategy-grid{grid-template-columns:1fr}.strategy-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-tf{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style></head>
 <body><div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">C</div><div><strong>Capital Desk</strong><small>Crypto Portfolio Intelligence</small></div></div>
-<nav class="nav"><button class="active" data-page="overview"><span>◫</span>نمای کلی</button><button data-page="trades"><span>⇄</span>معاملات</button><button data-page="capital"><span>↗</span>جریان سرمایه</button><button data-page="assets"><span>◈</span>دارایی‌ها</button><button data-page="market"><span>⌁</span>تحلیل بازار</button><button data-page="import"><span>⇧</span>ورود اطلاعات</button></nav>
+<nav class="nav"><button class="active" data-page="overview"><span>◫</span>نمای کلی</button><button data-page="trades"><span>⇄</span>معاملات</button><button data-page="capital"><span>↗</span>جریان سرمایه</button><button data-page="assets"><span>◈</span>دارایی‌ها</button><button data-page="market"><span>⌁</span>تحلیل بازار</button><button data-page="strategy"><span>✧</span>Strategy Lab</button><button data-page="import"><span>⇧</span>ورود اطلاعات</button></nav>
 <div class="side-note">حالت فقط خواندنی<br><b style="color:#7de0b9">Read-only workspace</b><br>هیچ سفارش یا برداشتی از این برنامه انجام نمی‌شود.</div></aside>
 <main class="main">
 <header class="top"><div><h1 id="pageTitle">نمای کلی سرمایه</h1><p>مدیریت متمرکز دارایی‌ها و عملکرد معاملاتی</p></div><div class="actions"><span class="pill">● KCEX · ورود دستی اطلاعات</span><button class="btn" id="appUpdateBtn" type="button">↻ بررسی بروزرسانی</button><button class="btn" id="exportBtn">خروجی JSON</button><button class="btn primary" onclick="showPage('import')">+ ورود اطلاعات</button></div></header>
@@ -114,7 +128,7 @@ button,input,select,textarea{font:inherit}
 
 <section class="section" id="market">
  <div class="card">
-  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۲ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.12</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
+  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۱۳ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.13</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
   <div class="market-toolbar">
    <label class="sub">منبع داده</label><select id="marketSource"><option value="auto" selected>خودکار · Bybit ← KuCoin ← Gate.io ← Binance ← CoinPaprika</option><option value="bybit">Bybit USDT Perpetual</option><option value="kucoin">KuCoin USDT Futures</option><option value="gate">Gate.io USDT Futures</option><option value="futures">Binance USDⓈ-M Futures</option><option value="spot">Binance Spot</option><option value="coinpaprika">CoinPaprika · داده تجمیعی بازار</option></select>
    <label class="sub">حداقل حجم ۲۴ساعته</label><select id="minVolume"><option value="1000" selected>۱٬۰۰۰ دلار / USDT</option><option value="2000">۲٬۰۰۰ دلار / USDT</option><option value="5000">۵٬۰۰۰ دلار / USDT</option><option value="10000">۱۰٬۰۰۰ دلار / USDT</option><option value="25000">۲۵٬۰۰۰ دلار / USDT</option><option value="50000">۵۰٬۰۰۰ دلار / USDT</option><option value="100000">۱۰۰٬۰۰۰ دلار / USDT</option><option value="500000">۵۰۰٬۰۰۰ دلار / USDT</option><option value="1000000">۱ میلیون دلار / USDT</option><option value="5000000">۵ میلیون دلار / USDT</option><option value="10000000">۱۰ میلیون دلار / USDT</option><option value="25000000">۲۵ میلیون دلار / USDT</option><option value="50000000">۵۰ میلیون دلار / USDT</option></select>
@@ -182,6 +196,41 @@ button,input,select,textarea{font:inherit}
  </div>
 </section>
 
+
+<section class="section" id="strategy">
+ <div class="card">
+  <div class="card-head"><div><h2>Strategy Lab · آزمایشگاه استراتژی</h2><div class="sub">موتور تطبیقی انتخاب استراتژی با داده کندل‌های بسته‌شده · فقط تحلیل و Paper Trading</div></div><span class="pill">CCAP Intelligence</span></div>
+  <div class="market-toolbar">
+   <div class="field" style="min-width:130px;flex:1"><label>نماد معاملاتی</label><input id="strategySymbol" value="ETHUSDT" placeholder="ETHUSDT" dir="ltr"></div>
+   <div class="field" style="min-width:160px;flex:1"><label>منبع داده</label><select id="strategyProvider"><option value="futures">Binance Futures</option><option value="bybit">Bybit Linear</option><option value="gate">Gate.io Futures</option><option value="kucoin">KuCoin Futures</option><option value="spot">Binance Spot</option></select></div>
+   <div class="field" style="min-width:130px;flex:1"><label>حالت تحلیل</label><select id="strategyMode"><option value="adaptive">هوشمند تطبیقی</option><option value="manual">استراتژی انتخابی</option></select></div>
+  </div>
+  <div class="strategy-grid" id="strategyChoices" style="margin:10px 0">
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="trend" checked> Trend Following · EMA / VWAP</label></div>
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="liquidity"> Liquidity Sweep · ساختار بازار</label></div>
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="volume"> Volume & Order Flow · حجم</label></div>
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="breakout"> Volatility Breakout · شکست نوسان</label></div>
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="momentum"> Momentum & RSI Divergence</label></div>
+   <div class="strategy-option"><label><input type="radio" name="strategyPick" value="multi"> Multi-Timeframe Confluence</label></div>
+  </div>
+  <div class="actions"><button class="btn primary" id="runStrategyBtn">اجرای تحلیل عمیق</button><span class="sub" id="strategyStatus">برای شروع، تحلیل زنده را اجرا کن.</span></div>
+ </div>
+ <div class="grid strategy-kpis" style="margin-top:12px">
+  <div class="strategy-kpi"><small>وضعیت بازار</small><b id="strategyRegime">—</b></div>
+  <div class="strategy-kpi"><small>استراتژی منتخب</small><b id="strategySelected">—</b></div>
+  <div class="strategy-kpi"><small>جهت تحلیل</small><b id="strategyDirection">—</b></div>
+  <div class="strategy-kpi"><small>امتیاز همگرایی</small><b id="strategyScore">—</b></div>
+ </div>
+ <div class="card" style="margin-top:12px">
+  <div class="card-head"><div><h2>تأیید چندتایم‌فریمی</h2><div class="sub">جهت و ساختار بر اساس آخرین کندل بسته‌شده</div></div><span class="tag">5m · 15m · 1h · 4h · 1D</span></div>
+  <div class="strategy-tf" id="strategyTimeframes"><div><small>۵ دقیقه</small><b>—</b></div><div><small>۱۵ دقیقه</small><b>—</b></div><div><small>۱ ساعت</small><b>—</b></div><div><small>۴ ساعت</small><b>—</b></div><div><small>۱ روز</small><b>—</b></div></div>
+ </div>
+ <div class="grid content" style="margin-top:12px">
+  <div class="card"><div class="card-head"><h2>منطق و شواهد تحلیل</h2><span class="sub" id="strategyDataQuality">داده هنوز دریافت نشده</span></div><div class="strategy-reasons" id="strategyReasons"><div>پس از دریافت کندل‌ها، دلایل تأیید و رد سیگنال اینجا نمایش داده می‌شوند.</div></div></div>
+  <div class="card"><div class="card-head"><h2>طرح معاملاتی آزمایشی</h2><span class="sub">بدون ثبت سفارش واقعی</span></div><div class="metric-grid"><div class="metric"><small>قیمت مرجع</small><b id="strategyEntry">—</b></div><div class="metric"><small>حد ضرر ساختاری</small><b id="strategyStop">—</b></div><div class="metric"><small>هدف اول · 1R</small><b id="strategyTarget1">—</b></div><div class="metric"><small>هدف دوم · 2R</small><b id="strategyTarget2">—</b></div></div><p class="market-note" id="strategyPlanNote">این مقادیر پس از تحلیل محاسبه می‌شوند. تا زمان تأیید ساختار، سیگنال صادر نمی‌شود.</p></div>
+ </div>
+ <div class="notice">این موتور ابزار تحلیل است، نه تضمین سود. داده‌های Order Flow واقعی، دفتر سفارش تاریخی و VWAP حجمی دقیق ممکن است در بعضی منابع در دسترس نباشند؛ در این نسخه از داده کندل و حجم قابل‌دسترسی استفاده می‌شود و موارد فاقد داده به‌عنوان تأییدشده فرض نمی‌شوند.</div>
+</section>
 <section class="section" id="import"><div class="grid import-grid"><div class="card"><h2>مرکز ورود اطلاعات</h2><p class="sub">منبع و نوع داده را انتخاب کن.</p><div class="field"><label>صرافی</label><select id="exchange"><option>KCEX</option><option>Binance</option><option>Gate.io</option><option>Bybit</option><option>Other</option></select></div><div class="field"><label>نوع اطلاعات</label><select id="dataType"><option value="capital">Capital Flow (متن)</option><option value="positions">Position History (CSV)</option><option value="orders">Order History (CSV)</option><option value="deposits">Deposit / Withdrawal (CSV)</option><option value="other">سایر اطلاعات</option></select></div><div class="drop"><input type="file" id="fileInput" accept=".csv,.txt,.json" style="max-width:100%"><br>فایل CSV، TXT یا JSON</div><div class="notice">این نسخه فایل تصویری را مستقیماً OCR نمی‌کند. برای تصاویر، فعلاً متن استخراج‌شده را در کادر کناری جای‌گذاری کن.</div></div><div class="card"><div class="card-head"><div><h2>Paste Data</h2><div class="sub">متن کپی‌شده از KCEX را اینجا قرار بده</div></div><button class="btn" id="clearText">پاک کردن</button></div><div class="field"><textarea id="pasteArea" placeholder="نمونه:&#10;2026-08-05&#10;20:33:30 USDT ETH/USDT Closing PNL -49.56&#10;2026-08-05&#10;20:33:30 USDT ETH/USDT Fee -0.23"></textarea></div><div class="actions"><button class="btn primary" id="parseBtn">تحلیل و ثبت اطلاعات</button><button class="btn" id="sampleBtn">بارگذاری نمونه Capital Flow</button></div><div id="importResult" class="sub" style="margin-top:14px"></div></div></div></section>
 <div class="footer">CCAP · MVP 0.6 · Multi-Exchange Scanner (up to 100 assets) + Signal Center + Price Bands · Glass UI · Local-first · Read-only · اطلاعات نمونه ناقص است و برای گزارش قطعی باید تاریخچه کامل وارد شود.</div>
 </main></div><div class="toast" id="toast"></div>
@@ -208,7 +257,7 @@ const capital=[['2026-08-05 20:45:59','Transfer to Spot',-64.69657187,'Internal 
 const fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function render(){document.getElementById('recentTrades').innerHTML=positions.slice(0,5).map(row=>`<tr><td>${row.symbol}</td><td>${row.side}</td><td>${row.lev}x</td><td>${fmt(row.entry)}</td><td>${fmt(row.close)}</td><td class="${row.pnl>=0?'green':'red'}">${row.pnl>0?'+':''}${fmt(row.pnl)}</td><td>${row.open}</td></tr>`).join('');document.getElementById('allTrades').innerHTML=positions.map(row=>`<tr><td>${row.symbol}</td><td>${row.side}</td><td>${row.lev}x</td><td>${fmt(row.entry)}</td><td>${fmt(row.close)}</td><td>${fmt(row.amount)}</td><td class="${row.pnl>=0?'green':'red'}">${row.pnl>0?'+':''}${fmt(row.pnl)}</td><td>${row.roe.toFixed(2)}%</td></tr>`).join('');document.getElementById('capitalRows').innerHTML=capital.slice(0,18).map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>USDT</td><td class="${r[2]>=0?'green':'red'}">${r[2]>0?'+':''}${fmt(r[2])}</td><td>${r[3]}</td></tr>`).join('');drawChart()}
 function drawChart(){let svg=document.getElementById('pnlChart'),vals=positions.slice().reverse().map(x=>x.pnl),sum=0,arr=vals.map(v=>(sum+=v)),min=Math.min(0,...arr),max=Math.max(1,...arr),w=700,h=220,p=25;let pts=arr.map((v,i)=>`${p+i*(w-2*p)/(arr.length-1)},${h-p-(v-min)/(max-min)*(h-2*p)}`).join(' ');svg.innerHTML=`<defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#22c58b" stop-opacity=".28"/><stop offset="1" stop-color="#22c58b" stop-opacity="0"/></linearGradient></defs><line x1="20" y1="${h-p}" x2="${w-10}" y2="${h-p}" stroke="#2b3b50"/><line x1="20" y1="${p}" x2="${w-10}" y2="${p}" stroke="#243143" stroke-dasharray="4 5"/><polyline points="${pts}" fill="none" stroke="#36c995" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="17" fill="#8b9bb0" font-size="11">Cumulative PnL (USDT)</text><text x="${w-10}" y="${h-2}" text-anchor="end" fill="#8b9bb0" font-size="11">۸ پوزیشن نمونه</text>`}
-function showPage(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let names={overview:'نمای کلی سرمایه',trades:'تاریخچه معاملات',capital:'جریان سرمایه',assets:'دارایی‌ها',market:'تحلیل و اسکن زنده بازار',import:'مرکز ورود اطلاعات'};document.getElementById('pageTitle').textContent=names[page]}
+function showPage(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let names={overview:'نمای کلی سرمایه',trades:'تاریخچه معاملات',capital:'جریان سرمایه',assets:'دارایی‌ها',market:'تحلیل و اسکن زنده بازار',strategy:'آزمایشگاه استراتژی',import:'مرکز ورود اطلاعات'};document.getElementById('pageTitle').textContent=names[page]}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 document.getElementById('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({positions,capital,source:'User-provided KCEX samples; partial'},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kcex-dashboard-data.json';a.click();URL.revokeObjectURL(a.href)};
@@ -403,7 +452,7 @@ async function scanMarket(){
     diagnosticText=' | بررسی شبکه: '+d.providers.map(p=>`${p.name}=${p.ok?`OK ${p.http_status}`:p.error}`).join(' ؛ ');
    }catch(de){diagnosticText=` | دریافت گزارش اتصال ناموفق بود: ${de.message}`}
   }
-  document.getElementById('scanMeta').textContent=`نسخه داشبورد CCAP 0.9.12 — همه منابع ناموفق بودند: ${e.message}${diagnosticText}. برای تأیید نسخه، /health را باز کن و مقدار build را بررسی کن.`;
+  document.getElementById('scanMeta').textContent=`نسخه داشبورد CCAP 0.9.13 — همه منابع ناموفق بودند: ${e.message}${diagnosticText}. برای تأیید نسخه، /health را باز کن و مقدار build را بررسی کن.`;
   toast('دریافت داده بازار ناموفق بود');console.error(e)
  }
  finally{btn.disabled=false;btn.textContent='↻ اسکن زنده بازار';setTimeout(()=>{if(progress.style.width==='100%')progress.style.width='0%'},1200)}
@@ -656,4 +705,87 @@ render();
 
 
 
+
+<script>
+(()=>{
+const strategyNames={trend:'Trend Following',liquidity:'Liquidity Sweep',volume:'Volume & Order Flow',breakout:'Volatility Breakout',momentum:'Momentum & RSI',multi:'Multi-Timeframe'};
+const tfLabels={'5m':'۵ دقیقه','15m':'۱۵ دقیقه','1h':'۱ ساعت','4h':'۴ ساعت','1d':'۱ روز'};
+const el=id=>document.getElementById(id);
+const fmt=(v)=>Number.isFinite(v)?Number(v).toLocaleString('en-US',{maximumFractionDigits:v<1?6:2}):'—';
+function closedBars(ks){return (ks||[]).slice(0,-1).filter(k=>[1,2,3,4,5,7].every(i=>Number.isFinite(+k[i])))}
+function stats(ks){
+ const a=closedBars(ks);if(a.length<35)throw Error('کندل بسته‌شده کافی نیست');
+ const c=a.map(k=>+k[4]),last=a[a.length-1],prev=a[a.length-2],vol=a.slice(-21,-1).map(k=>+k[7]),avg=vol.reduce((x,y)=>x+y,0)/vol.length;
+ const tr=[];for(let i=a.length-14;i<a.length;i++){const h=+a[i][2],l=+a[i][3],pc=+a[i-1][4];tr.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}
+ const hi=Math.max(...a.slice(-21,-1).map(k=>+k[2])),lo=Math.min(...a.slice(-21,-1).map(k=>+k[3]));
+ let gains=0,losses=0;for(let i=c.length-14;i<c.length;i++){let d=c[i]-c[i-1];if(d>0)gains+=d;else losses-=d}
+ const rsi=losses===0?100:100-100/(1+gains/14/(losses/14));
+ return {a,c,last,prev,close:+last[4],high:+last[2],low:+last[3],ema20:ema(c.slice(-80),20),ema50:ema(c.slice(-100),50),ema200:ema(c,200),rsi,atr:tr.reduce((x,y)=>x+y,0)/tr.length,volRatio:avg?+last[7]/avg:0,rangeHigh:hi,rangeLow:lo,change:(+last[4]/(+last[1])-1)*100,body:Math.abs(+last[4]-+last[1]),bull:+last[4]>+last[1],breakUp:+last[4]>hi,breakDown:+last[4]<lo,wickUp:+last[2]-Math.max(+last[1],+last[4]),wickDown:Math.min(+last[1],+last[4])-+last[3]};
+}
+function addScore(o,dir,n,why){o[dir]+=n;o.reasons.push(why)}
+function assess(all){
+ const m=all['15m'],h=all['1h'],f=all['4h'],d=all['1d'],five=all['5m'];
+ const out={long:0,short:0,reasons:[],risks:[]};
+ const trends=[h,f,d].map(x=>x.close>x.ema50?1:x.close<x.ema50?-1:0);
+ const aligned=trends.filter(x=>x===1).length-trends.filter(x=>x===-1).length;
+ if(aligned>=2)addScore(out,'long',20,'هم‌جهتی روند در تایم‌فریم‌های بالاتر به نفع خریداران است');
+ if(aligned<=-2)addScore(out,'short',20,'هم‌جهتی روند در تایم‌فریم‌های بالاتر به نفع فروشندگان است');
+ if(m.close>m.ema20&&m.ema20>m.ema50)addScore(out,'long',15,'ساختار EMA در ۱۵ دقیقه صعودی است');
+ if(m.close<m.ema20&&m.ema20<m.ema50)addScore(out,'short',15,'ساختار EMA در ۱۵ دقیقه نزولی است');
+ if(five.close>five.ema20&&five.bull)addScore(out,'long',8,'کندل بسته‌شده ۵ دقیقه‌ای بالای EMA20 بسته شده');
+ if(five.close<five.ema20&&!five.bull)addScore(out,'short',8,'کندل بسته‌شده ۵ دقیقه‌ای زیر EMA20 بسته شده');
+ if(m.breakUp&&m.volRatio>1.3)addScore(out,'long',18,'شکست سقف ۲۰ کندل با حجم بالاتر از میانگین');
+ if(m.breakDown&&m.volRatio>1.3)addScore(out,'short',18,'شکست کف ۲۰ کندل با حجم بالاتر از میانگین');
+ if(m.wickDown>m.body*1.5&&m.close>m.rangeLow)addScore(out,'long',9,'سایه پایینی بلند؛ احتمال جذب فروش در کف');
+ if(m.wickUp>m.body*1.5&&m.close<m.rangeHigh)addScore(out,'short',9,'سایه بالایی بلند؛ احتمال جذب خرید در سقف');
+ if(m.rsi>52&&m.rsi<70)addScore(out,'long',8,'مومنتوم RSI مثبت و هنوز نه‌چندان اشباع است');
+ if(m.rsi<48&&m.rsi>30)addScore(out,'short',8,'مومنتوم RSI منفی و هنوز نه‌چندان اشباع است');
+ if(m.rsi>=75)out.risks.push('RSI بالا است؛ خطر تعقیب قیمت و اصلاح وجود دارد');
+ if(m.rsi<=25)out.risks.push('RSI بسیار پایین است؛ خطر برگشت یا جهش اصلاحی وجود دارد');
+ if(m.volRatio<0.8)out.risks.push('حجم کندل اخیر پایین‌تر از میانگین است');
+ const recent=m.a.slice(-12),rangePct=(Math.max(...recent.map(k=>+k[2]))-Math.min(...recent.map(k=>+k[3])))/m.close*100;
+ const regime=rangePct<1.1&&Math.abs(m.change)<.25?'فشردگی / رنج':Math.abs(aligned)>=2?'رونددار':'مختلط';
+ if(regime.includes('رنج'))out.risks.push('بازار فشرده یا رنج است؛ شکست معتبر هنوز لازم است');
+ if(Math.abs(out.long-out.short)<12)out.risks.push('اختلاف شواهد LONG و SHORT کم است؛ از ورود اجباری خودداری شود');
+ return {...out,regime,aligned,rangePct};
+}
+function scoreManual(key,a,base){
+ const m=a['15m'],f=a['4h'],out={long:0,short:0,reasons:[],risks:[]};
+ const side=(cond,dir,n,msg)=>{if(cond)addScore(out,dir,n,msg)};
+ if(key==='trend'||key==='multi'){side(m.close>m.ema20&&m.ema20>m.ema50&&f.close>f.ema50,'long',40,'روند EMA در تایم‌فریم ورود و تأیید هم‌جهت است');side(m.close<m.ema20&&m.ema20<m.ema50&&f.close<f.ema50,'short',40,'روند EMA در تایم‌فریم ورود و تأیید هم‌جهت است')}
+ if(key==='liquidity'){side(m.wickDown>m.body*1.5&&m.close>m.rangeLow,'long',35,'رد قیمت از کف و سایه پایینی بلند');side(m.wickUp>m.body*1.5&&m.close<m.rangeHigh,'short',35,'رد قیمت از سقف و سایه بالایی بلند');out.reasons.push('این نسخه از الگوی کندلی به‌عنوان تقریب نقدینگی استفاده می‌کند؛ نقشه سفارش‌های پنهان در دسترس نیست')}
+ if(key==='volume'){side(m.volRatio>1.5&&m.bull,'long',35,'حجم کندل صعودی بیش از ۱٫۵ برابر میانگین');side(m.volRatio>1.5&&!m.bull,'short',35,'حجم کندل نزولی بیش از ۱٫۵ برابر میانگین');out.reasons.push('Delta و CVD واقعی در این منبع دریافت نشده‌اند')}
+ if(key==='breakout'){side(m.breakUp&&m.volRatio>1.2,'long',45,'بسته‌شدن بالای سقف ۲۰ کندل همراه حجم');side(m.breakDown&&m.volRatio>1.2,'short',45,'بسته‌شدن زیر کف ۲۰ کندل همراه حجم')}
+ if(key==='momentum'){side(m.rsi>55&&m.rsi<70&&m.close>m.ema20,'long',35,'RSI و قیمت، مومنتوم صعودی را تأیید می‌کنند');side(m.rsi<45&&m.rsi>30&&m.close<m.ema20,'short',35,'RSI و قیمت، مومنتوم نزولی را تأیید می‌کنند');out.reasons.push('واگرایی کلاسیک در این نسخه به‌صورت قطعی ادعا نمی‌شود؛ نیازمند تأیید پیوت‌هاست')}
+ if(key==='multi'){side(base.long>base.short,'long',Math.min(30,base.long/2),'همگرایی چندتایم‌فریمی');side(base.short>base.long,'short',Math.min(30,base.short/2),'همگرایی چندتایم‌فریمی')}
+ return out;
+}
+async function run(){
+ const btn=el('runStrategyBtn');btn.disabled=true;el('strategyStatus').textContent='در حال دریافت کندل‌های بازار…';
+ try{
+  let symbol=el('strategySymbol').value.trim().toUpperCase().replace('/','');if(!/^[A-Z0-9]{5,20}$/.test(symbol))throw Error('نماد معتبر وارد کن؛ مانند ETHUSDT');
+  const provider=el('strategyProvider').value,row={provider,symbol};
+  const intervals=['5m','15m','1h','4h','1d'];
+  const entries=await Promise.all(intervals.map(async tf=>[tf,await fetchChartCandles(row,tf)]));
+  const all=Object.fromEntries(entries.map(([tf,ks])=>[tf,stats(ks)]));
+  const base=assess(all),mode=el('strategyMode').value,key=document.querySelector('input[name="strategyPick"]:checked')?.value||'trend';
+  const selected=mode==='adaptive'? 'multi':key,manual=mode==='adaptive'?base:scoreManual(key,all,base);
+  const long=manual.long,short=manual.short,score=Math.max(long,short),diff=Math.abs(long-short);
+  let direction=score>=42&&diff>=15?(long>short?'LONG':'SHORT'):'WAIT';
+  const m=all['15m'],entry=m.close,stop=direction==='LONG'?Math.min(m.rangeLow,m.close-1.25*m.atr):direction==='SHORT'?Math.max(m.rangeHigh,m.close+1.25*m.atr):null;
+  const risk=stop===null?null:Math.abs(entry-stop),t1=stop===null?null:entry+(direction==='LONG'?1:-1)*risk,t2=stop===null?null:entry+(direction==='LONG'?2:-2)*risk;
+  el('strategyRegime').textContent=base.regime;el('strategySelected').textContent=strategyNames[selected];el('strategyDirection').textContent=direction;el('strategyDirection').className=direction==='LONG'?'green':direction==='SHORT'?'red':'gold';el('strategyScore').textContent=Math.round(score)+'/100';
+  el('strategyTimeframes').innerHTML=intervals.map(tf=>{const x=all[tf],dir=x.close>x.ema20?'صعودی':x.close<x.ema20?'نزولی':'خنثی';return '<div><small>'+tfLabels[tf]+'</small><b class="'+(dir==='صعودی'?'green':dir==='نزولی'?'red':'gold')+'">'+dir+'</b><small>'+fmt(x.close)+'</small></div>'}).join('');
+  const reasons=[...manual.reasons,...base.risks.map(x=>'ریسک: '+x)];if(!manual.reasons.length)reasons.unshift('شرایط ورود استراتژی انتخابی هنوز تأیید نشده است');
+  el('strategyReasons').innerHTML=reasons.map(x=>'<div>'+x.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>').join('');
+  el('strategyEntry').textContent=fmt(entry);el('strategyStop').textContent=stop===null?'—':fmt(stop);el('strategyTarget1').textContent=t1===null?'—':fmt(t1);el('strategyTarget2').textContent=t2===null?'—':fmt(t2);
+  el('strategyPlanNote').textContent=direction==='WAIT'?'عدم صدور سیگنال: شواهد کافی یا همگرایی مناسب وجود ندارد. منتظر بسته‌شدن کندل‌های بعدی بمان.':'طرح صرفاً آزمایشی است؛ ورود فقط پس از بررسی فاصله تا حدضرر، کارمزد و لغزش قیمت. با تغییر ساختار، تحلیل باطل می‌شود.';
+  el('strategyDataQuality').textContent='۵ تایم‌فریم · کندل بسته‌شده · '+symbol;el('strategyStatus').textContent='تحلیل تکمیل شد · '+new Date().toLocaleTimeString();
+ }catch(e){el('strategyStatus').textContent='خطا: '+e.message;el('strategyDirection').textContent='WAIT';el('strategyReasons').innerHTML='<div>'+e.message.replace(/[<>&]/g,'')+'</div>'}
+ finally{btn.disabled=false}
+}
+el('runStrategyBtn').addEventListener('click',run);
+el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
+})();
+</script>
 </body></html>
