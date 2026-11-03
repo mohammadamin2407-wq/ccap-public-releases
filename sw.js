@@ -1,6 +1,6 @@
 /* CCAP PWA updater — increment CACHE_NAME for every published release. */
-const CACHE_NAME = 'ccap-shell-v0916';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
+const CACHE_NAME = 'ccap-shell-v0917';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/ccap-logo.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
 });
