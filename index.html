@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.18 · Glass UI</title>
+<title>CCAP v0.9.19 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -221,6 +221,11 @@ button,input,select,textarea{font:inherit}
    <div class="strategy-option"><label><input type="radio" name="strategyPick" value="breakout"> Volatility Breakout · شکست نوسان</label></div>
    <div class="strategy-option"><label><input type="radio" name="strategyPick" value="momentum"> Momentum & RSI Divergence</label></div>
    <div class="strategy-option"><label><input type="radio" name="strategyPick" value="multi"> Multi-Timeframe Confluence</label></div>
+  </div>
+  <div class="strategy-option" style="margin:12px 0;border-color:rgba(138,183,255,.28)">
+   <label><input type="checkbox" id="rangeVolatilityToggle"> فعال‌سازی Range &amp; Volatility Intelligence</label>
+   <div class="market-note" style="margin-top:7px">حالت پیش‌فرض خاموش است. در حالت روشن، بازار پرنویز امتیاز سیگنال را کاهش می‌دهد؛ رنج پرنوسان اهداف را محافظه‌کارانه‌تر می‌کند و شکست حجمی معتبر امکان هدف دوم گسترده‌تر می‌دهد. تنظیم روی موتور اصلی سیگنال و Strategy Lab اثر می‌گذارد.</div>
+   <div class="market-note" id="rangeVolatilityState">وضعیت: خاموش · سیاست اهداف پایه</div>
   </div>
   <div class="actions"><button class="btn primary" id="runStrategyBtn">اجرای تحلیل عمیق</button><span class="sub" id="strategyStatus">برای شروع، تحلیل زنده را اجرا کن.</span></div>
  </div>
@@ -555,6 +560,22 @@ async function fetchMajorCandles(provider,t,base){
 }
 function calcATR(ks,period=14){const a=(ks||[]).slice(0,-1);if(a.length<period+1)return null;const trs=[];for(let i=a.length-period;i<a.length;i++){const h=+a[i][2],l=+a[i][3],pc=+a[i-1][4];trs.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}return trs.reduce((x,y)=>x+y,0)/trs.length}
 function getClosedCandles(ks){return (ks||[]).slice(0,-1).filter(k=>Number.isFinite(+k[1])&&Number.isFinite(+k[2])&&Number.isFinite(+k[3])&&Number.isFinite(+k[4]))}
+function rangeVolatilityEnabled(){try{return localStorage.getItem('ccap.rangeVolatility.enabled.v1')==='true'}catch(e){return false}}
+function analyzeRangeVolatility(ks15,change15,breakoutUp,breakoutDown,volumeRatio){
+ const bars=getClosedCandles(ks15);if(bars.length<45)return {regime:'داده ناکافی',confidence:0,atrPct:null,bbWidth:null,crosses:0};
+ const closes=bars.map(k=>+k[4]),last=bars[bars.length-1],tr=[];
+ for(let i=bars.length-14;i<bars.length;i++){const h=+bars[i][2],l=+bars[i][3],pc=+bars[i-1][4];tr.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}
+ const atr=tr.reduce((a,b)=>a+b,0)/tr.length,atrPct=atr/(+last[4])*100;
+ const win=closes.slice(-20),mean=win.reduce((a,b)=>a+b,0)/win.length,sd=Math.sqrt(win.reduce((a,b)=>a+(b-mean)**2,0)/win.length),bbWidth=mean?sd*4/mean*100:null;
+ let crosses=0,prevSide=0;
+ for(let i=20;i<closes.length;i++){const avg=closes.slice(i-19,i+1).reduce((a,b)=>a+b,0)/20,side=closes[i]>=avg?1:-1;if(prevSide&&side!==prevSide)crosses++;prevSide=side}
+ const expansion=(breakoutUp||breakoutDown)&&volumeRatio>=1.3&&Math.abs(change15)>=.15;
+ const highVolRange=atrPct>=.22&&crosses>=4&&!expansion;
+ const choppy=crosses>=7&&!expansion&&Math.abs(change15)<.3;
+ const regime=expansion?'گسترش روند / شکست':highVolRange?'رنج پرنوسان':choppy?'رنج پرنویز':'متعادل / روند';
+ const confidence=Math.min(95,50+(expansion?25:0)+(highVolRange?18:0)+(choppy?20:0)+(volumeRatio>=1.3?8:0));
+ return {regime,confidence,atrPct,bbWidth,crosses,expansion,highVolRange,choppy};
+}
 function buildMajorSignal(row,ks1m,ks15,ks1h){
  const minuteBars=getClosedCandles(ks1m),bars=getClosedCandles(ks15),hourBars=getClosedCandles(ks1h);if(minuteBars.length<30||bars.length<30||hourBars.length<22)return {direction:'WAIT',score:0,longScore:0,shortScore:0,reason:'تعداد کندل بسته‌شده برای تحلیل کافی نیست.',dataQuality:'insufficient'};
  const last=bars[bars.length-1],prev=bars[bars.length-2],close=+last[4],open=+last[1];
@@ -576,12 +597,19 @@ function buildMajorSignal(row,ks1m,ks15,ks1h){
  if(buyRatio!=null){if(buyRatio>=0.57){long+=8;reasons.push('غلبه حجم خرید تهاجمی در کندل اخیر')}else if(buyRatio<=0.43){short+=8;reasons.push('غلبه حجم فروش تهاجمی در کندل اخیر')}}
  if(change15>2.2||change15< -2.2)risks.push('حرکت ۱۵ دقیقه‌ای بیش از حد سریع است');
  if(s15.rsi<26)risks.push('RSI بسیار پایین؛ احتمال نوسان برگشتی');
+ const rvEnabled=rangeVolatilityEnabled(),rv=analyzeRangeVolatility(ks15,change15,breakoutUp,breakoutDown,s15.volRatio);
+ if(rvEnabled&&rv.choppy){long=Math.max(0,long-10);short=Math.max(0,short-10);risks.push('Range Intelligence: بازار پرنویز است؛ امتیاز هر دو جهت ۱۰ واحد کاهش یافت')}
+ if(rvEnabled&&rv.highVolRange)risks.push('Range Intelligence: رنج پرنوسان؛ هدف دوم فقط با تأیید مومنتوم معتبر دنبال شود');
+ if(rvEnabled&&rv.expansion)reasons.push('Range Intelligence: شکست همراه افزایش حجم و مومنتوم تأیید شده است');
  const direction=long>=66&&long-short>=12?'LONG':short>=66&&short-long>=12?'SHORT':'WAIT';
  const score=Math.max(long,short),price=+row.lastPrice,atr=calcATR(ks15)||price*0.004;
  const riskDistance=Math.max(atr*1.45,price*0.0022);
- let plan=null;if(direction==='LONG')plan={entry:price,stop:price-riskDistance,target1:price+riskDistance*1.5,target2:price+riskDistance*2.25};
- if(direction==='SHORT')plan={entry:price,stop:price+riskDistance,target1:price-riskDistance*1.5,target2:price-riskDistance*2.25};
- return {direction,score,longScore:long,shortScore:short,change1m,change15,change1h,rsi:s15.rsi,volumeRatio:s15.volRatio,minuteVolumeRatio:s1m.volRatio,upTrend,downTrend,breakoutUp,breakoutDown,buyRatio,atr,reasons,risks,plan,dataQuality:'candles',candleTime:+last[6]||+last[0],source:row.source};
+ let tp1R=1.5,tp2R=2.25;
+ if(rvEnabled&&rv.highVolRange){tp1R=1.25;tp2R=1.65}
+ if(rvEnabled&&rv.expansion){tp1R=1.5;tp2R=2.6}
+ let plan=null;if(direction==='LONG')plan={entry:price,stop:price-riskDistance,target1:price+riskDistance*tp1R,target2:price+riskDistance*tp2R};
+ if(direction==='SHORT')plan={entry:price,stop:price+riskDistance,target1:price-riskDistance*tp1R,target2:price-riskDistance*tp2R};
+ return {direction,score,longScore:long,shortScore:short,change1m,change15,change1h,rsi:s15.rsi,volumeRatio:s15.volRatio,minuteVolumeRatio:s1m.volRatio,upTrend,downTrend,breakoutUp,breakoutDown,buyRatio,atr,rangeVolatility:rv,rangeVolatilityEnabled:rvEnabled,targetPolicy:{tp1R,tp2R},reasons,risks,plan,dataQuality:'candles',candleTime:+last[6]||+last[0],source:row.source};
 }
 function bandLevelsFromCandles(symbol,price,ks,mode){
  const step=currentBandStep(symbol),bars=getClosedCandles(ks).slice(-96),anchor=Math.round(price/step),levels=[];
@@ -868,6 +896,10 @@ async function run(){
  }catch(e){el('strategyStatus').textContent='خطا: '+e.message;el('strategyDirection').textContent='WAIT';el('strategyReasons').innerHTML='<div>'+e.message.replace(/[<>&]/g,'')+'</div>'}
  finally{btn.disabled=false}
 }
+const rvToggle=el('rangeVolatilityToggle'),rvState=el('rangeVolatilityState');
+try{rvToggle.checked=localStorage.getItem('ccap.rangeVolatility.enabled.v1')==='true'}catch(e){}
+function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · تشخیص رژیم و اهداف تطبیقی فعال است':'وضعیت: خاموش · سیاست اهداف پایه';}
+rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
 })();
