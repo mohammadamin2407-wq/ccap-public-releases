@@ -222,10 +222,10 @@ button,input,select,textarea{font:inherit}
    <div class="strategy-option"><label><input type="radio" name="strategyPick" value="momentum"> Momentum & RSI Divergence</label></div>
    <div class="strategy-option"><label><input type="radio" name="strategyPick" value="multi"> Multi-Timeframe Confluence</label></div>
   </div>
-  <div class="strategy-option" style="margin:12px 0;border-color:rgba(138,183,255,.28)">
-   <label><input type="checkbox" id="rangeVolatilityToggle"> فعال‌سازی Range &amp; Volatility Intelligence</label>
-   <div class="market-note" style="margin-top:7px">حالت پیش‌فرض خاموش است. در حالت روشن، بازار پرنویز امتیاز سیگنال را کاهش می‌دهد؛ رنج پرنوسان اهداف را محافظه‌کارانه‌تر می‌کند و شکست حجمی معتبر امکان هدف دوم گسترده‌تر می‌دهد. تنظیم روی موتور اصلی سیگنال و Strategy Lab اثر می‌گذارد.</div>
-   <div class="market-note" id="rangeVolatilityState">وضعیت: خاموش · سیاست اهداف پایه</div>
+  <div class="strategy-option" style="margin:12px 0;border-color:rgba(138,183,255,.35);padding:14px">
+   <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="rangeVolatilityToggle"> فعال‌سازی یک‌کلیکی قابلیت‌های هوشمند پیشرفته (Advanced Intelligence Mode)</label>
+   <div class="market-note" style="margin-top:7px">خاموش: موتور پایه. روشن: تشخیص رژیم و نوسان، تحلیل تطبیقی، مدیریت هوشمند اهداف و پایش عملکرد/ریسک. این کلید اصلی تمام ارتقاهای پیشرفته است و تنظیم آن روی همین دستگاه ذخیره می‌شود.</div>
+   <div class="market-note" id="rangeVolatilityState">وضعیت: خاموش · موتور پایه فعال</div>
   </div>
   <div class="actions"><button class="btn primary" id="runStrategyBtn">اجرای تحلیل عمیق</button><span class="sub" id="strategyStatus">برای شروع، تحلیل زنده را اجرا کن.</span></div>
  </div>
@@ -560,7 +560,9 @@ async function fetchMajorCandles(provider,t,base){
 }
 function calcATR(ks,period=14){const a=(ks||[]).slice(0,-1);if(a.length<period+1)return null;const trs=[];for(let i=a.length-period;i<a.length;i++){const h=+a[i][2],l=+a[i][3],pc=+a[i-1][4];trs.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}return trs.reduce((x,y)=>x+y,0)/trs.length}
 function getClosedCandles(ks){return (ks||[]).slice(0,-1).filter(k=>Number.isFinite(+k[1])&&Number.isFinite(+k[2])&&Number.isFinite(+k[3])&&Number.isFinite(+k[4]))}
-function rangeVolatilityEnabled(){try{return localStorage.getItem('ccap.rangeVolatility.enabled.v1')==='true'}catch(e){return false}}
+const ADVANCED_MODE_KEY='ccap.advancedIntelligence.enabled.v1';
+function advancedIntelligenceEnabled(){try{return localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){return false}}
+function rangeVolatilityEnabled(){return advancedIntelligenceEnabled()}
 function analyzeRangeVolatility(ks15,change15,breakoutUp,breakoutDown,volumeRatio){
  const bars=getClosedCandles(ks15);if(bars.length<45)return {regime:'داده ناکافی',confidence:0,atrPct:null,bbWidth:null,crosses:0};
  const closes=bars.map(k=>+k[4]),last=bars[bars.length-1],tr=[];
@@ -897,8 +899,8 @@ async function run(){
  finally{btn.disabled=false}
 }
 const rvToggle=el('rangeVolatilityToggle'),rvState=el('rangeVolatilityState');
-try{rvToggle.checked=localStorage.getItem('ccap.rangeVolatility.enabled.v1')==='true'}catch(e){}
-function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · تشخیص رژیم و اهداف تطبیقی فعال است':'وضعیت: خاموش · سیاست اهداف پایه';}
+try{rvToggle.checked=localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){}
+function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(ADVANCED_MODE_KEY,String(on));localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · تمام قابلیت‌های هوشمند پیشرفته فعال‌اند':'وضعیت: خاموش · موتور پایه فعال است';document.documentElement.dataset.advancedIntelligence=on?'on':'off';}
 rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
