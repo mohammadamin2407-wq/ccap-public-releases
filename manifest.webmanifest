@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.22 — داشبورد فارسی مدیریت سرمایه، تحلیل بازار، آزمایشگاه عملکرد سیگنال و مدیریت بودجه ریسک؛ Paper Trading only.",
+  "description": "CCAP v0.9.23 — داشبورد فارسی مدیریت سرمایه، تحلیل بازار، آزمایشگاه عملکرد سیگنال و مدیریت بودجه ریسک؛ Paper Trading only.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
