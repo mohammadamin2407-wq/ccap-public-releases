@@ -698,7 +698,7 @@ function evaluateSignalArchive(){
    const bars=getClosedCandles(row.performanceCandles1m);if(!bars.length)continue;
    const firstExpected=(Math.floor(rec.createdAt/60000)+1)*60000;
    const pending=bars.filter(k=>+k[0]>(rec.lastEvaluatedCandleStart??(firstExpected-1)));
-   if(!rec.lastEvaluatedCandleStart&&+bars[0][0]>firstExpected+60000){
+   if(!rec.lastEvaluatedCandleStart&&+bars[0][0]>firstExpected){
     rec.historyIncomplete=true;rec.evaluationNote='بازه کامل کندل‌های یک‌دقیقه‌ای از زمان ثبت سیگنال در دسترس نیست؛ نتیجه حدس زده نمی‌شود.';changed=true;continue;
    }
    if(rec.lastEvaluatedCandleStart&&pending.length&&+pending[0][0]>rec.lastEvaluatedCandleStart+120000){
