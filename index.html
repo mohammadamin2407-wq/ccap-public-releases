@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.22 · Glass UI</title>
+<title>CCAP v0.9.23 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -1017,12 +1017,15 @@ function calculateRiskCapitalPlan(){
  if(!p||!['LONG','SHORT'].includes(p.direction))return {ok:false,reason:'پس از اجرای تحلیل، جهت معتبر LONG یا SHORT لازم است.'};
  if(!Number.isFinite(settings.balance)||settings.balance<=0)return {ok:false,reason:'سرمایه حساب آزمایشی را وارد کن؛ هیچ سرمایه‌ای به‌صورت پیش‌فرض فرض نشده است.'};
  if(!Number.isFinite(settings.perTradePct)||settings.perTradePct<=0||settings.perTradePct>10||!Number.isFinite(settings.dailyCapPct)||settings.dailyCapPct<=0||settings.dailyCapPct>20||!Number.isFinite(settings.weeklyCapPct)||settings.weeklyCapPct<=0||settings.weeklyCapPct>50||!Number.isFinite(settings.leverage)||settings.leverage<1||settings.leverage>125)return {ok:false,reason:'درصدهای ریسک یا اهرم خارج از محدوده مجاز وارد شده‌اند.'};
+ const activeSameSymbol=riskLedger().find(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase());
+ if(activeSameSymbol)return {ok:false,reason:'برای این نماد یک برنامه رزروشده فعال وجود دارد؛ ابتدا آن را ببند یا آزاد کن.'};
  const entry=Number(p.entry),stop=Number(p.stop),distance=Math.abs(entry-stop);
  if(!Number.isFinite(entry)||!Number.isFinite(stop)||entry<=0||stop<=0||distance<=0)return {ok:false,reason:'قیمت ورود یا حدضرر معتبر نیست.'};
  if((p.direction==='LONG'&&stop>=entry)||(p.direction==='SHORT'&&stop<=entry))return {ok:false,reason:'حدضرر با جهت تحلیل هم‌خوان نیست؛ برنامه مسدود شد.'};
  const budget=riskBudget(settings),requested=settings.balance*settings.perTradePct/100,riskAmount=Math.min(requested,budget.dayRemaining,budget.weekRemaining);
  if(!(riskAmount>0))return {ok:false,reason:'بودجه ریسک روزانه یا هفتگی تکمیل شده است؛ برنامه جدید رزرو نمی‌شود.'};
  const qty=riskAmount/distance,notional=qty*entry,margin=notional/settings.leverage;
+ if(margin<=riskAmount)return {ok:false,reason:'مارجین تخمینی '+fmt(margin)+' USDT از زیان نظری '+fmt(riskAmount)+' USDT بیشتر نیست؛ اهرم را کاهش بده. الزامات Maintenance Margin صرافی نیز جداگانه باید بررسی شوند.'};
  return {ok:true,settings,budget,requested,riskAmount,entry,stop,distance,stopPct:distance/entry*100,qty,notional,margin,...p};
 }
 function riskEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
@@ -1053,8 +1056,8 @@ function renderRiskLedger(){
   return '<div class="signal-event"><div><b>'+riskEscape(r.symbol)+' · '+riskEscape(r.direction)+' · '+status+'</b><small>'+new Date(r.createdAt).toLocaleString('fa-IR')+' · Entry '+fmt(r.entry)+' · Stop '+fmt(r.stop)+'</small><small>ریسک رزروشده: '+fmt(r.riskAmount)+' USDT · حجم تخمینی: '+fmt(r.qty)+'</small></div><div class="actions">'+buttons+'</div></div>';
  }).join('');
 }
-function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger(),record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);safeStorageSet(RISK_CAPITAL_LEDGER_KEY,rows);renderRiskCapital();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
-function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now();toast('برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.')}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now();toast('برنامه اجرا نشد؛ بودجه ریسک آزاد شد.')}safeStorageSet(RISK_CAPITAL_LEDGER_KEY,rows);renderRiskCapital()}
+function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger();if(rows.some(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase())){toast('برای این نماد قبلاً بودجه رزرو شده است.');return}const record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره دفتر ریسک ناموفق بود؛ برنامه رزرو نشد. فضای ذخیره‌سازی مرورگر را بررسی کن.');return}renderRiskCapital();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
+function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now()}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now()}else return;try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره تغییر دفتر ریسک ناموفق بود؛ وضعیت تغییر نکرد.');return}toast(action==='close'?'برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.':'برنامه اجرا نشد؛ بودجه ریسک آزاد شد.');renderRiskCapital()}
 
 async function run(){
  const btn=el('runStrategyBtn');btn.disabled=true;el('strategyStatus').textContent='در حال دریافت کندل‌های بازار…';
