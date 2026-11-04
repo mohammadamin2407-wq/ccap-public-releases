@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.23 · Glass UI</title>
+<title>CCAP v0.9.24 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -291,7 +291,7 @@ button,input,select,textarea{font:inherit}
  <div class="actions" style="margin-top:12px"><button class="btn primary" id="reserveRiskPlanBtn" disabled>ثبت برنامه و رزرو بودجه ریسک</button><span class="sub" id="riskCapitalFeedback">ثبت فقط بودجه ریسک آزمایشی را رزرو می‌کند؛ سفارش یا معامله ایجاد نمی‌شود.</span></div>
  <div class="card-head" style="margin-top:18px"><div><h2>دفتر بودجه ریسک</h2><div class="sub">رزروهای فعال، برنامه‌های بسته‌شده و آزادسازی برنامه‌های اجرا‌نشده</div></div><span class="sub" id="riskLedgerCount">۰ برنامه</span></div>
  <div class="signal-list" id="riskCapitalLedger"><div class="signal-empty">هنوز برنامه ریسکی ثبت نشده است.</div></div>
- <div class="notice">مقادیر ریسک، اندازه موقعیت و مارجین تخمینی‌اند و فقط زیان قیمتی تا حدضرر را مدل می‌کنند. کارمزد، لغزش، Funding، حداقل اندازه قرارداد، Maintenance Margin و قواعد خاص هر صرافی در این محاسبه لحاظ نشده‌اند؛ در عمل زیان می‌تواند بیشتر باشد. برنامه «رزروشده» تا زمان بستن یا آزادسازی، بودجه روزانه و هفتگی را اشغال می‌کند. تنظیمات و دفتر ریسک فقط در حافظه همین دستگاه ذخیره می‌شوند.</div>
+ <div class="notice">مقادیر ریسک، اندازه موقعیت و مارجین تخمینی‌اند و فقط زیان قیمتی تا حدضرر را مدل می‌کنند. کارمزد، لغزش، Funding، حداقل اندازه قرارداد، Maintenance Margin و قواعد خاص هر صرافی در این محاسبه لحاظ نشده‌اند؛ در عمل زیان می‌تواند بیشتر باشد. برنامه «رزروشده» تا زمان بستن یا آزادسازی، بودجه روزانه و هفتگی را اشغال می‌کند. سرمایه واردشده ثابت است و خودکار با سود/زیان تاریخی داشبورد همگام نمی‌شود. تنظیمات و دفتر ریسک فقط در حافظه همین دستگاه ذخیره می‌شوند.</div>
 </div>
 
 <div class="card" style="margin-top:15px" id="orderFlowCenter">
@@ -1015,6 +1015,8 @@ function riskBudget(settings,rows=riskLedger()){const dayCap=settings.balance*se
 function calculateRiskCapitalPlan(){
  const settings=riskSettings(),p=riskMarketPlan;
  if(!p||!['LONG','SHORT'].includes(p.direction))return {ok:false,reason:'پس از اجرای تحلیل، جهت معتبر LONG یا SHORT لازم است.'};
+ const analysisAge=Date.now()-Number(p.updatedAt);
+ if(!Number.isFinite(analysisAge)||analysisAge<0||analysisAge>15*60*1000)return {ok:false,reason:'اعتبار تحلیل تمام شده است؛ تحلیل تازه اجرا کن. هر برنامه پس از ۱۵ دقیقه منقضی می‌شود.'};
  if(!Number.isFinite(settings.balance)||settings.balance<=0)return {ok:false,reason:'سرمایه حساب آزمایشی را وارد کن؛ هیچ سرمایه‌ای به‌صورت پیش‌فرض فرض نشده است.'};
  if(!Number.isFinite(settings.perTradePct)||settings.perTradePct<=0||settings.perTradePct>10||!Number.isFinite(settings.dailyCapPct)||settings.dailyCapPct<=0||settings.dailyCapPct>20||!Number.isFinite(settings.weeklyCapPct)||settings.weeklyCapPct<=0||settings.weeklyCapPct>50||!Number.isFinite(settings.leverage)||settings.leverage<1||settings.leverage>125)return {ok:false,reason:'درصدهای ریسک یا اهرم خارج از محدوده مجاز وارد شده‌اند.'};
  const activeSameSymbol=riskLedger().find(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase());
@@ -1092,7 +1094,7 @@ async function run(){
   el('strategyReasons').innerHTML=reasons.map(x=>'<div>'+x.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>').join('');
   el('strategyEntry').textContent=fmt(entry);el('strategyStop').textContent=stop===null?'—':fmt(stop);el('strategyTarget1').textContent=t1===null?'—':fmt(t1);el('strategyTarget2').textContent=t2===null?'—':fmt(t2);
   el('strategyPlanNote').textContent=direction==='WAIT'?'عدم صدور سیگنال: شواهد کافی یا همگرایی مناسب وجود ندارد. منتظر بسته‌شدن کندل‌های بعدی بمان.':'طرح صرفاً آزمایشی است؛ ورود فقط پس از بررسی فاصله تا حدضرر، کارمزد و لغزش قیمت. با تغییر ساختار، تحلیل باطل می‌شود.';
-  riskMarketPlan={symbol,direction,entry,stop};renderRiskCapital();
+  riskMarketPlan={symbol,direction,entry,stop,updatedAt:Date.now()};renderRiskCapital();
   el('strategyDataQuality').textContent='۵ تایم‌فریم · کندل بسته‌شده · '+symbol;el('strategyStatus').textContent='تحلیل تکمیل شد · '+new Date().toLocaleTimeString();
  }catch(e){riskMarketPlan=null;renderRiskCapital();el('strategyStatus').textContent='خطا: '+e.message;el('strategyDirection').textContent='WAIT';el('strategyReasons').innerHTML='<div>'+e.message.replace(/[<>&]/g,'')+'</div>'}
  finally{btn.disabled=false}
