@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.20 — داشبورد فارسی تحلیل بازار، Strategy Lab، Order Flow، CVD و تشخیص واگرایی، Advanced Intelligence Mode، نمودار کندلی و مدیریت سرمایه.",
+  "description": "CCAP v0.9.21 — داشبورد فارسی مدیریت سرمایه، تحلیل بازار و آزمایشگاه عملکرد سیگنال با پایش TP1/TP2 روی کندل یک‌دقیقه‌ای؛ Paper Trading only.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
