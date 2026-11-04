@@ -224,7 +224,7 @@ button,input,select,textarea{font:inherit}
   </div>
   <div class="strategy-option" style="margin:12px 0;border-color:rgba(138,183,255,.35);padding:14px">
    <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="rangeVolatilityToggle"> فعال‌سازی یک‌کلیکی قابلیت‌های هوشمند پیشرفته (Advanced Intelligence Mode)</label>
-   <div class="market-note" style="margin-top:7px">خاموش: موتور پایه. روشن: تشخیص رژیم و نوسان، تحلیل تطبیقی، مدیریت هوشمند اهداف و پایش عملکرد/ریسک. این کلید اصلی تمام ارتقاهای پیشرفته است و تنظیم آن روی همین دستگاه ذخیره می‌شود.</div>
+   <div class="market-note" style="margin-top:7px">خاموش: موتور پایه. روشن: تشخیص رژیم و نوسان و تنظیم تطبیقی اهداف فعال می‌شود. این کلید اصلی برای قابلیت‌های هوشمند فعلی و ارتقاهای بعدی است و تنظیم آن روی همین دستگاه ذخیره می‌شود.</div>
    <div class="market-note" id="rangeVolatilityState">وضعیت: خاموش · موتور پایه فعال</div>
   </div>
   <div class="actions"><button class="btn primary" id="runStrategyBtn">اجرای تحلیل عمیق</button><span class="sub" id="strategyStatus">برای شروع، تحلیل زنده را اجرا کن.</span></div>
@@ -900,7 +900,7 @@ async function run(){
 }
 const rvToggle=el('rangeVolatilityToggle'),rvState=el('rangeVolatilityState');
 try{rvToggle.checked=localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){}
-function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(ADVANCED_MODE_KEY,String(on));localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · تمام قابلیت‌های هوشمند پیشرفته فعال‌اند':'وضعیت: خاموش · موتور پایه فعال است';document.documentElement.dataset.advancedIntelligence=on?'on':'off';}
+function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(ADVANCED_MODE_KEY,String(on));localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · قابلیت‌های هوشمند پیاده‌سازی‌شده فعال‌اند':'وضعیت: خاموش · موتور پایه فعال است';document.documentElement.dataset.advancedIntelligence=on?'on':'off';}
 rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
