@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.21 · Glass UI</title>
+<title>CCAP v0.9.22 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -262,6 +262,38 @@ button,input,select,textarea{font:inherit}
   <div class="card"><div class="card-head"><h2>طرح معاملاتی آزمایشی</h2><span class="sub">بدون ثبت سفارش واقعی</span></div><div class="metric-grid"><div class="metric"><small>قیمت مرجع</small><b id="strategyEntry">—</b></div><div class="metric"><small>حد ضرر ساختاری</small><b id="strategyStop">—</b></div><div class="metric"><small>هدف اول · 1R</small><b id="strategyTarget1">—</b></div><div class="metric"><small>هدف دوم · 2R</small><b id="strategyTarget2">—</b></div></div><p class="market-note" id="strategyPlanNote">این مقادیر پس از تحلیل محاسبه می‌شوند. تا زمان تأیید ساختار، سیگنال صادر نمی‌شود.</p></div>
  </div>
  
+<div class="strategy-option" id="riskCapitalControl" style="margin:14px 0 10px;border-color:rgba(138,183,255,.35);padding:14px">
+ <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="riskCapitalToggle"> فعال‌سازی یک‌کلیکی Risk &amp; Capital Management</label>
+ <div class="market-note" style="margin-top:7px">این ماژول مستقل از Advanced Intelligence Mode و Signal Performance Lab است. با روشن‌کردن آن، حجم فرضی موقعیت بر اساس فاصله ورود تا حدضرر و بودجه ریسک محاسبه می‌شود؛ هیچ سفارشی ثبت نمی‌شود.</div>
+ <div class="market-note" id="riskCapitalState">وضعیت: خاموش · محاسبه‌گر مدیریت ریسک غیرفعال</div>
+</div>
+<div class="card" id="riskCapitalPanel" style="display:none;margin:10px 0;background:rgba(8,16,29,.42);box-shadow:none">
+ <div class="card-head"><div><h2>Risk &amp; Capital Management</h2><div class="sub">محاسبه اندازه موقعیت، زیان نظری تا حدضرر و سقف بودجه ریسک</div></div><span class="pill">Paper Risk Only</span></div>
+ <div class="market-toolbar" style="align-items:end;gap:12px">
+  <div class="field" style="min-width:145px;flex:1"><label>سرمایه حساب آزمایشی (USDT)</label><input id="riskCapitalBalance" type="number" min="0" step="any" placeholder="سرمایه را وارد کن" dir="ltr"></div>
+  <div class="field" style="min-width:130px;flex:1"><label>ریسک هر برنامه (%)</label><input id="riskCapitalPerTrade" type="number" min="0.01" max="10" step="0.05" value="0.5" dir="ltr"></div>
+  <div class="field" style="min-width:130px;flex:1"><label>سقف ریسک روزانه (%)</label><input id="riskCapitalDailyCap" type="number" min="0.01" max="20" step="0.1" value="1.5" dir="ltr"></div>
+  <div class="field" style="min-width:130px;flex:1"><label>سقف ریسک هفتگی (%)</label><input id="riskCapitalWeeklyCap" type="number" min="0.01" max="50" step="0.1" value="4" dir="ltr"></div>
+  <div class="field" style="min-width:110px;flex:1"><label>اهرم فرضی</label><input id="riskCapitalLeverage" type="number" min="1" max="125" step="1" value="1" dir="ltr"></div>
+ </div>
+ <div class="signal-history-grid" id="riskBudgetStats">
+  <div class="signal-history-stat"><small>بودجه باقی‌مانده امروز</small><b>—</b></div>
+  <div class="signal-history-stat"><small>بودجه باقی‌مانده این هفته</small><b>—</b></div>
+  <div class="signal-history-stat"><small>برنامه‌های رزروشده فعال</small><b>۰</b></div>
+ </div>
+ <div class="metric-grid" style="margin-top:10px">
+  <div class="metric"><small>ریسک مجاز برای این برنامه</small><b id="riskAllowedAmount">—</b></div>
+  <div class="metric"><small>حجم دارایی تخمینی</small><b id="riskPositionQty">—</b></div>
+  <div class="metric"><small>ارزش اسمی موقعیت</small><b id="riskPositionNotional">—</b></div>
+  <div class="metric"><small>مارجین تخمینی با اهرم انتخابی</small><b id="riskPositionMargin">—</b></div>
+ </div>
+ <div class="market-note" id="riskSizingDetail" style="margin-top:10px">برای محاسبه، ابتدا تحلیل Strategy Lab را اجرا و سرمایه حساب آزمایشی را وارد کن.</div>
+ <div class="actions" style="margin-top:12px"><button class="btn primary" id="reserveRiskPlanBtn" disabled>ثبت برنامه و رزرو بودجه ریسک</button><span class="sub" id="riskCapitalFeedback">ثبت فقط بودجه ریسک آزمایشی را رزرو می‌کند؛ سفارش یا معامله ایجاد نمی‌شود.</span></div>
+ <div class="card-head" style="margin-top:18px"><div><h2>دفتر بودجه ریسک</h2><div class="sub">رزروهای فعال، برنامه‌های بسته‌شده و آزادسازی برنامه‌های اجرا‌نشده</div></div><span class="sub" id="riskLedgerCount">۰ برنامه</span></div>
+ <div class="signal-list" id="riskCapitalLedger"><div class="signal-empty">هنوز برنامه ریسکی ثبت نشده است.</div></div>
+ <div class="notice">مقادیر ریسک، اندازه موقعیت و مارجین تخمینی‌اند و فقط زیان قیمتی تا حدضرر را مدل می‌کنند. کارمزد، لغزش، Funding، حداقل اندازه قرارداد، Maintenance Margin و قواعد خاص هر صرافی در این محاسبه لحاظ نشده‌اند؛ در عمل زیان می‌تواند بیشتر باشد. برنامه «رزروشده» تا زمان بستن یا آزادسازی، بودجه روزانه و هفتگی را اشغال می‌کند. تنظیمات و دفتر ریسک فقط در حافظه همین دستگاه ذخیره می‌شوند.</div>
+</div>
+
 <div class="card" style="margin-top:15px" id="orderFlowCenter">
  <div class="card-head"><div><h2>Order Flow · CVD · Divergence</h2><div class="sub">داده معاملات تجمیعی و دفتر سفارش Binance USDⓈ-M Futures · مستقل از امتیاز کندلی</div></div><span class="pill" id="flowStatus">غیرفعال تا اجرای تحلیل</span></div>
  <div class="market-toolbar" style="margin-bottom:12px"><label class="sub">بازه محاسبه جریان سفارش</label><select id="flowWindow"><option value="300">حدود ۵ دقیقه اخیر</option><option value="900" selected>حدود ۱۵ دقیقه اخیر</option><option value="3600">حدود ۱ ساعت اخیر</option></select><span class="sub">نماد و منبع از تنظیمات Strategy Lab خوانده می‌شوند.</span></div>
@@ -969,8 +1001,64 @@ function scoreManual(key,a,base){
  if(key==='multi'){side(base.long>base.short,'long',Math.min(30,base.long/2),'همگرایی چندتایم‌فریمی');side(base.short>base.long,'short',Math.min(30,base.short/2),'همگرایی چندتایم‌فریمی')}
  return out;
 }
+
+const RISK_CAPITAL_ENABLED_KEY='ccap.riskCapital.enabled.v1';
+const RISK_CAPITAL_SETTINGS_KEY='ccap.riskCapital.settings.v1';
+const RISK_CAPITAL_LEDGER_KEY='ccap.riskCapital.ledger.v1';
+let riskMarketPlan=null;
+function riskCapitalEnabled(){try{return localStorage.getItem(RISK_CAPITAL_ENABLED_KEY)==='true'}catch(e){return false}}
+function riskSettings(){const val=id=>{const v=el(id)?.value?.trim();return v===''||v==null?NaN:Number(v)};return {balance:val('riskCapitalBalance'),perTradePct:val('riskCapitalPerTrade'),dailyCapPct:val('riskCapitalDailyCap'),weeklyCapPct:val('riskCapitalWeeklyCap'),leverage:val('riskCapitalLeverage')}}
+function riskLedger(){const rows=safeStorageGet(RISK_CAPITAL_LEDGER_KEY,[]);return Array.isArray(rows)?rows:[]}
+function riskPeriodStart(weekly=false){const d=new Date();d.setHours(0,0,0,0);if(weekly)d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
+function riskUsedInPeriod(rows,start){return rows.filter(r=>r.status==='reserved'||(r.status==='closed'&&Number(r.closedAt||r.createdAt)>=start)).reduce((sum,r)=>sum+Math.max(0,Number(r.riskAmount)||0),0)}
+function riskBudget(settings,rows=riskLedger()){const dayCap=settings.balance*settings.dailyCapPct/100,weekCap=settings.balance*settings.weeklyCapPct/100;const dayUsed=riskUsedInPeriod(rows,riskPeriodStart(false)),weekUsed=riskUsedInPeriod(rows,riskPeriodStart(true));return {dayCap,weekCap,dayUsed,weekUsed,dayRemaining:Math.max(0,dayCap-dayUsed),weekRemaining:Math.max(0,weekCap-weekUsed),active:rows.filter(r=>r.status==='reserved').length}}
+function calculateRiskCapitalPlan(){
+ const settings=riskSettings(),p=riskMarketPlan;
+ if(!p||!['LONG','SHORT'].includes(p.direction))return {ok:false,reason:'پس از اجرای تحلیل، جهت معتبر LONG یا SHORT لازم است.'};
+ if(!Number.isFinite(settings.balance)||settings.balance<=0)return {ok:false,reason:'سرمایه حساب آزمایشی را وارد کن؛ هیچ سرمایه‌ای به‌صورت پیش‌فرض فرض نشده است.'};
+ if(!Number.isFinite(settings.perTradePct)||settings.perTradePct<=0||settings.perTradePct>10||!Number.isFinite(settings.dailyCapPct)||settings.dailyCapPct<=0||settings.dailyCapPct>20||!Number.isFinite(settings.weeklyCapPct)||settings.weeklyCapPct<=0||settings.weeklyCapPct>50||!Number.isFinite(settings.leverage)||settings.leverage<1||settings.leverage>125)return {ok:false,reason:'درصدهای ریسک یا اهرم خارج از محدوده مجاز وارد شده‌اند.'};
+ const entry=Number(p.entry),stop=Number(p.stop),distance=Math.abs(entry-stop);
+ if(!Number.isFinite(entry)||!Number.isFinite(stop)||entry<=0||stop<=0||distance<=0)return {ok:false,reason:'قیمت ورود یا حدضرر معتبر نیست.'};
+ if((p.direction==='LONG'&&stop>=entry)||(p.direction==='SHORT'&&stop<=entry))return {ok:false,reason:'حدضرر با جهت تحلیل هم‌خوان نیست؛ برنامه مسدود شد.'};
+ const budget=riskBudget(settings),requested=settings.balance*settings.perTradePct/100,riskAmount=Math.min(requested,budget.dayRemaining,budget.weekRemaining);
+ if(!(riskAmount>0))return {ok:false,reason:'بودجه ریسک روزانه یا هفتگی تکمیل شده است؛ برنامه جدید رزرو نمی‌شود.'};
+ const qty=riskAmount/distance,notional=qty*entry,margin=notional/settings.leverage;
+ return {ok:true,settings,budget,requested,riskAmount,entry,stop,distance,stopPct:distance/entry*100,qty,notional,margin,...p};
+}
+function riskEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function loadRiskSettings(){const saved=safeStorageGet(RISK_CAPITAL_SETTINGS_KEY,{}),defaults={balance:'',perTradePct:.5,dailyCapPct:1.5,weeklyCapPct:4,leverage:1};for(const [key,id] of [['balance','riskCapitalBalance'],['perTradePct','riskCapitalPerTrade'],['dailyCapPct','riskCapitalDailyCap'],['weeklyCapPct','riskCapitalWeeklyCap'],['leverage','riskCapitalLeverage']]){const node=el(id);if(node)node.value=saved[key]??defaults[key]}}
+function persistRiskSettings(){const s=riskSettings();safeStorageSet(RISK_CAPITAL_SETTINGS_KEY,{balance:Number.isFinite(s.balance)?s.balance:'',perTradePct:s.perTradePct,dailyCapPct:s.dailyCapPct,weeklyCapPct:s.weeklyCapPct,leverage:s.leverage})}
+function renderRiskCapital(){
+ const on=riskCapitalEnabled(),panel=el('riskCapitalPanel'),toggle=el('riskCapitalToggle'),state=el('riskCapitalState'),reserve=el('reserveRiskPlanBtn');
+ if(panel)panel.style.display=on?'block':'none';if(toggle&&toggle.checked!==on)toggle.checked=on;
+ if(state)state.textContent=on?'وضعیت: روشن · محاسبه اندازه موقعیت و کنترل بودجه ریسک فعال است':'وضعیت: خاموش · محاسبه‌گر مدیریت ریسک غیرفعال';
+ if(!on){if(reserve)reserve.disabled=true;return}
+ const s=riskSettings(),valid=Number.isFinite(s.balance)&&s.balance>0&&Number.isFinite(s.dailyCapPct)&&Number.isFinite(s.weeklyCapPct),budget=valid?riskBudget(s):null;
+ if(budget)el('riskBudgetStats').innerHTML='<div class="signal-history-stat"><small>بودجه باقی‌مانده امروز</small><b>'+fmt(budget.dayRemaining)+' USDT</b><small>مصرف/رزرو: '+fmt(budget.dayUsed)+' از '+fmt(budget.dayCap)+'</small></div><div class="signal-history-stat"><small>بودجه باقی‌مانده این هفته</small><b>'+fmt(budget.weekRemaining)+' USDT</b><small>مصرف/رزرو: '+fmt(budget.weekUsed)+' از '+fmt(budget.weekCap)+'</small></div><div class="signal-history-stat"><small>برنامه‌های رزروشده فعال</small><b>'+budget.active+'</b></div>';
+ else el('riskBudgetStats').innerHTML='<div class="signal-history-stat"><small>بودجه باقی‌مانده امروز</small><b>—</b></div><div class="signal-history-stat"><small>بودجه باقی‌مانده این هفته</small><b>—</b></div><div class="signal-history-stat"><small>برنامه‌های رزروشده فعال</small><b>'+riskLedger().filter(r=>r.status==='reserved').length+'</b></div>';
+ const p=calculateRiskCapitalPlan();
+ if(p.ok){
+  el('riskAllowedAmount').textContent=fmt(p.riskAmount)+' USDT';el('riskPositionQty').textContent=fmt(p.qty)+' '+riskEscape(p.symbol||'واحد');el('riskPositionNotional').textContent=fmt(p.notional)+' USDT';el('riskPositionMargin').textContent=fmt(p.margin)+' USDT';
+  el('riskSizingDetail').textContent=p.symbol+' · '+p.direction+' · Entry '+fmt(p.entry)+' · Stop '+fmt(p.stop)+' · فاصله حدضرر '+p.stopPct.toFixed(3)+'% · '+(p.riskAmount+1e-9<p.requested?'ریسک به‌دلیل سقف باقی‌مانده محدود شده است.':'ریسک بر اساس درصد هر برنامه محاسبه شده است.')+' · زیان نظری تا حدضرر: '+fmt(p.riskAmount)+' USDT، پیش از کارمزد و لغزش.';
+  if(reserve)reserve.disabled=false;
+ }else{el('riskAllowedAmount').textContent='—';el('riskPositionQty').textContent='—';el('riskPositionNotional').textContent='—';el('riskPositionMargin').textContent='—';el('riskSizingDetail').textContent=p.reason;if(reserve)reserve.disabled=true}
+ renderRiskLedger();
+}
+function renderRiskLedger(){
+ const rows=riskLedger().slice().sort((a,b)=>b.createdAt-a.createdAt),node=el('riskCapitalLedger'),count=el('riskLedgerCount');if(count)count.textContent=rows.length+' برنامه';if(!node)return;
+ if(!rows.length){node.innerHTML='<div class="signal-empty">هنوز برنامه ریسکی ثبت نشده است.</div>';return}
+ node.innerHTML=rows.slice(0,8).map(r=>{
+  const status=r.status==='reserved'?'رزروشده · بودجه اشغال است':r.status==='closed'?'بسته‌شده · بودجه مصرف‌شده':'اجرا نشد · بودجه آزاد شد';
+  const buttons=r.status==='reserved'?'<button class="btn" data-risk-action="close" data-risk-id="'+riskEscape(r.id)+'">بستن برنامه</button><button class="btn" data-risk-action="release" data-risk-id="'+riskEscape(r.id)+'">اجرا نشد / آزادسازی</button>':'';
+  return '<div class="signal-event"><div><b>'+riskEscape(r.symbol)+' · '+riskEscape(r.direction)+' · '+status+'</b><small>'+new Date(r.createdAt).toLocaleString('fa-IR')+' · Entry '+fmt(r.entry)+' · Stop '+fmt(r.stop)+'</small><small>ریسک رزروشده: '+fmt(r.riskAmount)+' USDT · حجم تخمینی: '+fmt(r.qty)+'</small></div><div class="actions">'+buttons+'</div></div>';
+ }).join('');
+}
+function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger(),record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);safeStorageSet(RISK_CAPITAL_LEDGER_KEY,rows);renderRiskCapital();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
+function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now();toast('برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.')}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now();toast('برنامه اجرا نشد؛ بودجه ریسک آزاد شد.')}safeStorageSet(RISK_CAPITAL_LEDGER_KEY,rows);renderRiskCapital()}
+
 async function run(){
  const btn=el('runStrategyBtn');btn.disabled=true;el('strategyStatus').textContent='در حال دریافت کندل‌های بازار…';
+ riskMarketPlan=null;renderRiskCapital();
  try{
   let symbol=el('strategySymbol').value.trim().toUpperCase().replace('/','');if(!/^[A-Z0-9]{5,20}$/.test(symbol))throw Error('نماد معتبر وارد کن؛ مانند ETHUSDT');
   const provider=el('strategyProvider').value,row={provider,symbol};
@@ -1001,14 +1089,23 @@ async function run(){
   el('strategyReasons').innerHTML=reasons.map(x=>'<div>'+x.replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))+'</div>').join('');
   el('strategyEntry').textContent=fmt(entry);el('strategyStop').textContent=stop===null?'—':fmt(stop);el('strategyTarget1').textContent=t1===null?'—':fmt(t1);el('strategyTarget2').textContent=t2===null?'—':fmt(t2);
   el('strategyPlanNote').textContent=direction==='WAIT'?'عدم صدور سیگنال: شواهد کافی یا همگرایی مناسب وجود ندارد. منتظر بسته‌شدن کندل‌های بعدی بمان.':'طرح صرفاً آزمایشی است؛ ورود فقط پس از بررسی فاصله تا حدضرر، کارمزد و لغزش قیمت. با تغییر ساختار، تحلیل باطل می‌شود.';
+  riskMarketPlan={symbol,direction,entry,stop};renderRiskCapital();
   el('strategyDataQuality').textContent='۵ تایم‌فریم · کندل بسته‌شده · '+symbol;el('strategyStatus').textContent='تحلیل تکمیل شد · '+new Date().toLocaleTimeString();
- }catch(e){el('strategyStatus').textContent='خطا: '+e.message;el('strategyDirection').textContent='WAIT';el('strategyReasons').innerHTML='<div>'+e.message.replace(/[<>&]/g,'')+'</div>'}
+ }catch(e){riskMarketPlan=null;renderRiskCapital();el('strategyStatus').textContent='خطا: '+e.message;el('strategyDirection').textContent='WAIT';el('strategyReasons').innerHTML='<div>'+e.message.replace(/[<>&]/g,'')+'</div>'}
  finally{btn.disabled=false}
 }
 const rvToggle=el('rangeVolatilityToggle'),rvState=el('rangeVolatilityState');
 try{rvToggle.checked=localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){}
 function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(ADVANCED_MODE_KEY,String(on));localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · قابلیت‌های هوشمند پیاده‌سازی‌شده فعال‌اند':'وضعیت: خاموش · موتور پایه فعال است';document.documentElement.dataset.advancedIntelligence=on?'on':'off';}
 rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
+
+const riskCapitalToggle=el('riskCapitalToggle');loadRiskSettings();if(riskCapitalToggle)riskCapitalToggle.checked=riskCapitalEnabled();
+function syncRiskCapitalToggle(){const on=!!riskCapitalToggle.checked;try{localStorage.setItem(RISK_CAPITAL_ENABLED_KEY,String(on))}catch(e){}renderRiskCapital();toast(on?'Risk & Capital Management فعال شد':'مدیریت ریسک غیرفعال شد؛ موتور پایه تغییری نکرد')}
+riskCapitalToggle.addEventListener('change',syncRiskCapitalToggle);
+['riskCapitalBalance','riskCapitalPerTrade','riskCapitalDailyCap','riskCapitalWeeklyCap','riskCapitalLeverage'].forEach(id=>el(id).addEventListener('input',()=>{persistRiskSettings();renderRiskCapital()}));
+el('reserveRiskPlanBtn').addEventListener('click',reserveRiskPlan);
+el('riskCapitalLedger').addEventListener('click',e=>{const b=e.target.closest('button[data-risk-action]');if(b)updateRiskReservation(b.dataset.riskAction,b.dataset.riskId)});
+renderRiskCapital();
 const signalPerformanceToggle=el('signalPerformanceToggle');
 try{signalPerformanceToggle.checked=signalPerformanceEnabled()}catch(e){}
 function syncSignalPerformanceToggle(){
