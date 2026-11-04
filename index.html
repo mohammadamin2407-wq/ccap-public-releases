@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.19 · Glass UI</title>
+<title>CCAP v0.9.21 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -184,8 +184,26 @@ button,input,select,textarea{font:inherit}
   <div class="signal-grid" id="signalCards"><div class="signal-empty">پس از اجرای اسکن بازار، تحلیل BTC، ETH، DOGE و سایر ارزهای اصلی اینجا نمایش داده می‌شود.</div></div>
   <div class="card-head" style="margin-top:18px"><h2>گزارش سیگنال‌ها و هشدار تضعیف</h2><span class="sub">آخرین ۳۰ رویداد</span></div>
   <div class="signal-list" id="signalEventFeed"><div class="signal-empty">هنوز رویدادی ثبت نشده است.</div></div>
-  <div class="card-head" style="margin-top:20px"><div><h2>آرشیو سیگنال‌های موفق</h2><div class="sub">موفق = رسیدن به هدف اول پیش از لمس حدضرر · ارزیابی با کندل‌های بسته‌شده ۱۵ دقیقه‌ای</div></div><span class="pill" id="signalArchiveCount">۰ موفق</span></div>
-  <div class="signal-history-toolbar"><label class="sub" for="signalHistoryDays">بازه زمانی</label><select id="signalHistoryDays"><option value="1">۱ روز گذشته</option><option value="2">۲ روز گذشته</option><option value="3">۳ روز گذشته</option><option value="4">۴ روز گذشته</option><option value="5">۵ روز گذشته</option><option value="6">۶ روز گذشته</option><option value="7" selected>۷ روز گذشته</option></select><label class="sub" for="signalHistoryStatus">نمایش</label><select id="signalHistoryStatus"><option value="SUCCESS" selected>فقط موفق‌ها</option><option value="ALL">همه وضعیت‌ها</option><option value="PENDING">در انتظار نتیجه</option><option value="FAILED">ناموفق</option></select><button class="btn" id="clearSignalHistory">پاک‌کردن همه سوابق</button></div>
+  <div class="card-head" style="margin-top:20px"><div><h2>آرشیو و ارزیابی سیگنال‌ها</h2><div class="sub">ثبت مسیر قیمت تا TP1 / TP2 / SL · حالت پایه ۱۵m و حالت توسعه‌یافته ۱m</div></div><span class="pill" id="signalArchiveCount">۰ با TP1</span></div>
+  <div class="strategy-option" id="signalPerformanceControl" style="margin:10px 0;border-color:rgba(138,183,255,.35);padding:14px">
+   <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="signalPerformanceToggle"> فعال‌سازی یک‌کلیکی Signal Performance Lab</label>
+   <div class="market-note" style="margin-top:7px">این کلید مستقل از Advanced Intelligence Mode است. روشن: پایش جداگانه کندل‌های بسته‌شده ۱ دقیقه‌ای، ثبت برخورد TP1 و TP2، تشخیص حدضرر پیش/پس از TP1 و برخوردهای مبهم. خاموش: ارزیابی پایه ۱۵ دقیقه‌ای ادامه دارد.</div>
+   <div class="market-note" id="signalPerformanceState">وضعیت: خاموش · آرشیو پایه ۱۵ دقیقه‌ای فعال</div>
+  </div>
+  <div class="card" id="signalPerformancePanel" style="display:none;margin:10px 0;background:rgba(8,16,29,.42);box-shadow:none">
+   <div class="card-head"><div><h2>Signal Performance Lab</h2><div class="sub">آمار پیشروی سیگنال‌های ثبت‌شده در همین دستگاه</div></div><span class="pill">۱m · Paper Tracking</span></div>
+   <div class="signal-history-grid" id="signalPerformanceStats">
+    <div class="signal-history-stat"><small>سیگنال‌های ارزیابی‌شده</small><b>۰</b></div>
+    <div class="signal-history-stat"><small>نرخ رسیدن به TP1</small><b>—</b></div>
+    <div class="signal-history-stat"><small>نرخ TP2 پس از TP1</small><b>—</b></div>
+    <div class="signal-history-stat"><small>حدضرر پیش از TP1</small><b>۰</b></div>
+    <div class="signal-history-stat"><small>برخورد مبهم در ۱m</small><b>۰</b></div>
+    <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>—</b></div>
+   </div>
+   <div class="market-note" id="signalPerformanceDetail">هنوز داده‌ای برای ارزیابی ثبت نشده است.</div>
+   <div class="market-note">این نسخه نرخ برخورد اهداف و زمان رسیدن به آن‌ها را گزارش می‌کند؛ میانگین سود تحقق‌یافته، Drawdown و PnL خالص محاسبه نمی‌شوند، چون مدل خروج پله‌ای، اندازه موقعیت، کارمزد، لغزش و Funding هنوز تعریف نشده‌اند. سوابق قدیمی ۱۵ دقیقه‌ای نیز به‌صورت گذشته‌نگر به داده ۱ دقیقه‌ای تبدیل نمی‌شوند.</div>
+  </div>
+  <div class="signal-history-toolbar"><label class="sub" for="signalHistoryDays">بازه زمانی</label><select id="signalHistoryDays"><option value="1">۱ روز گذشته</option><option value="2">۲ روز گذشته</option><option value="3">۳ روز گذشته</option><option value="4">۴ روز گذشته</option><option value="5">۵ روز گذشته</option><option value="6">۶ روز گذشته</option><option value="7" selected>۷ روز گذشته</option></select><label class="sub" for="signalHistoryStatus">نمایش</label><select id="signalHistoryStatus"><option value="SUCCESS" selected>سیگنال‌هایی که TP1 را لمس کرده‌اند</option><option value="ALL">همه وضعیت‌ها</option><option value="PENDING">در انتظار نتیجه</option><option value="FAILED">حدضرر پیش از TP1</option><option value="TP1_ONLY">TP1 و سپس حدضرر</option><option value="TP2_SUCCESS">رسیدن به TP2</option><option value="AMBIGUOUS">برخورد مبهم</option></select><button class="btn" id="clearSignalHistory">پاک‌کردن همه سوابق</button></div>
   <div class="signal-history-grid" id="signalHistoryStats"><div class="signal-history-stat"><small>موفق</small><b>۰</b></div><div class="signal-history-stat"><small>در انتظار</small><b>۰</b></div><div class="signal-history-stat"><small>ناموفق</small><b>۰</b></div></div>
   <div id="signalHistoryList"><div class="signal-empty">پس از ثبت سیگنال‌های جدید و رسیدن قیمت به هدف اول، سوابق موفق اینجا نمایش داده می‌شوند.</div></div>
   <div class="market-note">سوابق از زمان نصب این نسخه به بعد در حافظه همین مرورگر/دستگاه ذخیره می‌شوند؛ سوابق قدیمی که قیمت ورود، حدضرر و هدف ثبت‌شده ندارند، قابل بازسازی دقیق نیستند. برای ارزیابی، داشبورد باید دوباره باز و تحلیل بازار اجرا شود؛ داده‌های این آرشیو بین دستگاه‌ها همگام‌سازی نمی‌شوند.</div>
@@ -558,10 +576,29 @@ async function fetchMajorCandles(provider,t,base){
  const path=provider==='futures'?'/fapi/v1/klines':'/api/v3/klines';
  return await apiGet(base+path+`?symbol=${t.contract}&interval=${cfg.binance}&limit=${limit}`);
 }
+async function fetchPerformanceCandles1m(provider,t,base){
+ const limit=700,now=Date.now(),from=now-(limit+5)*60000;
+ if(provider==='bybit'){
+  const j=await apiGet(base+`/v5/market/kline?category=linear&symbol=${t.contract}&interval=1&limit=${limit}`);
+  return bybitCandlesToKlines(envelopeData(j,provider));
+ }
+ if(provider==='kucoin'){
+  const j=await apiGet(base+`/api/v1/kline/query?symbol=${t.contract}&granularity=1&from=${from}&to=${now}`);
+  return kucoinCandlesToKlines(envelopeData(j,provider)).map(k=>{if(+k[0]<1e12){k[0]=+k[0]*1000;k[6]=+k[6]*1000}return k});
+ }
+ if(provider==='gate'){
+  const j=await apiGet(base+`/futures/usdt/candlesticks?contract=${t.contract}&interval=1m&limit=${limit}`);
+  return gateCandlesToKlines(j);
+ }
+ const path=provider==='futures'?'/fapi/v1/klines':'/api/v3/klines';
+ return await apiGet(base+path+`?symbol=${t.contract}&interval=1m&limit=${limit}`);
+}
 function calcATR(ks,period=14){const a=(ks||[]).slice(0,-1);if(a.length<period+1)return null;const trs=[];for(let i=a.length-period;i<a.length;i++){const h=+a[i][2],l=+a[i][3],pc=+a[i-1][4];trs.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}return trs.reduce((x,y)=>x+y,0)/trs.length}
 function getClosedCandles(ks){return (ks||[]).slice(0,-1).filter(k=>Number.isFinite(+k[1])&&Number.isFinite(+k[2])&&Number.isFinite(+k[3])&&Number.isFinite(+k[4]))}
 const ADVANCED_MODE_KEY='ccap.advancedIntelligence.enabled.v1';
+const SIGNAL_PERFORMANCE_KEY='ccap.signalPerformance.enabled.v1';
 function advancedIntelligenceEnabled(){try{return localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){return false}}
+function signalPerformanceEnabled(){try{return localStorage.getItem(SIGNAL_PERFORMANCE_KEY)==='true'}catch(e){return false}}
 function rangeVolatilityEnabled(){return advancedIntelligenceEnabled()}
 function analyzeRangeVolatility(ks15,change15,breakoutUp,breakoutDown,volumeRatio){
  const bars=getClosedCandles(ks15);if(bars.length<45)return {regime:'داده ناکافی',confidence:0,atrPct:null,bbWidth:null,crosses:0};
@@ -648,16 +685,56 @@ function sendOneSignal(symbol){const r=(scannerState.majorRows||[]).find(x=>x.ba
 function renderSignalCards(){const el=document.getElementById('signalCards'),rows=(scannerState.majorRows||[]).slice();if(!rows.length){el.innerHTML='<div class="signal-empty">اطلاعات ارزهای اصلی هنوز دریافت نشده است.</div>';return}rows.sort((a,b)=>((b.signal?.direction==='LONG'||b.signal?.direction==='SHORT')?1:0)-((a.signal?.direction==='LONG'||a.signal?.direction==='SHORT')?1:0)||(b.signal?.score||0)-(a.signal?.score||0));el.innerHTML=rows.map(r=>{const s=r.signal||{},dir=s.direction||'WAIT',cls=dir==='LONG'?'long':dir==='SHORT'?'short':'wait',label=dir==='LONG'?'خرید / LONG':dir==='SHORT'?'فروش / SHORT':s.dataQuality==='aggregated'?'فقط رصد':'انتظار';const plan=s.plan;return `<div class="signal-card ${cls}"><div class="signal-top"><div><b>${r.baseSymbol}/USDT</b><div class="sub">${r.source} · قیمت ${priceText(r.baseSymbol,r.lastPrice,r.band?.step)}</div></div><span class="signal-dir ${cls}">${label}</span></div><div class="rowline"><span class="sub">امتیاز جهت غالب</span><b>${s.score||0}/100</b></div>${plan?`<div class="signal-values"><div><small>ورود مرجع</small><b>${priceText(r.baseSymbol,plan.entry,r.band?.step)}</b></div><div><small>حدضرر</small><b class="red">${priceText(r.baseSymbol,plan.stop,r.band?.step)}</b></div><div><small>هدف اول</small><b class="green">${priceText(r.baseSymbol,plan.target1,r.band?.step)}</b></div><div><small>هدف دوم</small><b class="green">${priceText(r.baseSymbol,plan.target2,r.band?.step)}</b></div></div>`:`<div class="market-note">${s.reason||'شرایط لازم برای سیگنال ورود کامل نیست.'}</div>`}<div class="market-note">${(s.reasons||[]).slice(0,2).join(' · ')||'نیازمند تأیید بیشتر'} ${(s.risks||[]).length?' · ریسک: '+s.risks.slice(0,1).join(''):''}</div><div class="rowline" style="margin-top:8px"><span class="sub">تغییر ۱۵m ${s.change15==null?'—':pct(s.change15)} · ۱h ${s.change1h==null?'—':pct(s.change1h)}</span>${plan?`<button class="btn" data-notify-symbol="${r.baseSymbol}">ارسال اعلان</button>`:''}</div></div>`}).join('');el.querySelectorAll('[data-notify-symbol]').forEach(b=>b.onclick=()=>sendOneSignal(b.dataset.notifySymbol));}
 function archiveSignal(row,time=Date.now(),origin='AUTO'){
  const s=row.signal||{},p=s.plan;if(!p||!['LONG','SHORT'].includes(s.direction))return;
- const rec={id:`${row.baseSymbol}-${s.direction}-${time}-${Math.random().toString(36).slice(2,7)}`,symbol:row.baseSymbol,direction:s.direction,score:s.score||0,source:row.source||s.source||'—',entry:+p.entry,stop:+p.stop,target1:+p.target1,target2:+p.target2,createdAt:time,status:'PENDING',resolvedAt:null,outcomePrice:null,origin};
+ const rec={id:`${row.baseSymbol}-${s.direction}-${time}-${Math.random().toString(36).slice(2,7)}`,symbol:row.baseSymbol,direction:s.direction,score:s.score||0,source:row.source||s.source||'—',entry:+p.entry,stop:+p.stop,target1:+p.target1,target2:+p.target2,createdAt:time,status:'PENDING',resolvedAt:null,outcomePrice:null,origin,evaluationMode:signalPerformanceEnabled()?'1m':'15m',tp1HitAt:null,tp2HitAt:null,stopHitAt:null,lastEvaluatedCandleStart:null,historyIncomplete:false};
  signalState.archive.unshift(rec);signalState.archive=signalState.archive.slice(0,500);safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();
 }
 function evaluateSignalArchive(){
  let changed=false;const rows=scannerState.majorRows||[];
- for(const rec of signalState.archive){if(rec.status!=='PENDING')continue;const row=rows.find(x=>x.baseSymbol===rec.symbol);if(!row?.candles15)continue;
+ for(const rec of signalState.archive){
+  if(rec.status!=='PENDING')continue;
+  const row=rows.find(x=>x.baseSymbol===rec.symbol);if(!row)continue;
+  if(rec.evaluationMode==='1m'){
+   if(!signalPerformanceEnabled()||rec.historyIncomplete)continue;
+   const bars=getClosedCandles(row.performanceCandles1m);if(!bars.length)continue;
+   const firstExpected=(Math.floor(rec.createdAt/60000)+1)*60000;
+   const pending=bars.filter(k=>+k[0]>(rec.lastEvaluatedCandleStart??(firstExpected-1)));
+   if(!rec.lastEvaluatedCandleStart&&+bars[0][0]>firstExpected+60000){
+    rec.historyIncomplete=true;rec.evaluationNote='بازه کامل کندل‌های یک‌دقیقه‌ای از زمان ثبت سیگنال در دسترس نیست؛ نتیجه حدس زده نمی‌شود.';changed=true;continue;
+   }
+   if(rec.lastEvaluatedCandleStart&&pending.length&&+pending[0][0]>rec.lastEvaluatedCandleStart+120000){
+    rec.historyIncomplete=true;rec.evaluationNote='در تاریخچه کندل‌های یک‌دقیقه‌ای فاصله داده وجود دارد؛ ارزیابی این رکورد متوقف شد.';changed=true;continue;
+   }
+   for(const k of pending){
+    const ts=+k[0],high=+k[2],low=+k[3],closeAt=Math.max(ts+59999,+k[6]||0);
+    const stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop;
+    const tp1Hit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;
+    const tp2Hit=rec.direction==='LONG'?high>=rec.target2:low<=rec.target2;
+    rec.lastEvaluatedCandleStart=ts;changed=true;
+    if(stopHit&&(tp1Hit||tp2Hit)){
+     rec.status='AMBIGUOUS';rec.ambiguousAt=closeAt;rec.resolvedAt=closeAt;rec.resolution='۱ دقیقه';
+     rec.evaluationNote='در یک کندل یک‌دقیقه‌ای هم حدضرر و هم هدف لمس شده‌اند؛ ترتیب برخورد از OHLC قابل تشخیص نیست.';
+     break;
+    }
+    if(stopHit){
+     rec.stopHitAt=closeAt;rec.status=rec.tp1HitAt?'TP1_ONLY':'FAILED';rec.resolvedAt=closeAt;rec.outcomePrice=rec.stop;rec.resolution='۱ دقیقه';
+     rec.evaluationNote=rec.tp1HitAt?'TP1 پیش‌تر ثبت شده و سپس حدضرر لمس شده است.':'حدضرر پیش از TP1 لمس شده است.';
+     break;
+    }
+    if(tp1Hit&&!rec.tp1HitAt)rec.tp1HitAt=closeAt;
+    if(tp2Hit){
+     if(!rec.tp1HitAt)rec.tp1HitAt=closeAt;
+     rec.tp2HitAt=closeAt;rec.status='TP2_SUCCESS';rec.resolvedAt=closeAt;rec.outcomePrice=rec.target2;rec.resolution='۱ دقیقه';
+     rec.evaluationNote='هدف دوم لمس شده است؛ هدف اول نیز در همان مسیر لمس‌شده محسوب می‌شود.';
+     break;
+    }
+   }
+   continue;
+  }
+  if(!row.candles15)continue;
   const bars=getClosedCandles(row.candles15).filter(k=>(+k[0])>rec.createdAt);
   for(const k of bars){const high=+k[2],low=+k[3],stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop,targetHit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;
    if(!stopHit&&!targetHit)continue;
-   // Conservative tie-break: if stop and target are both inside one 15m candle, count stop first.
+   // Legacy 15m mode retains the original conservative tie-break.
    rec.status=stopHit?'FAILED':'SUCCESS';rec.resolvedAt=Math.max((+k[0])+15*60*1000-1,+k[6]||0);rec.outcomePrice=stopHit?rec.stop:rec.target1;rec.resolution='۱۵ دقیقه';changed=true;break;
   }
  }
@@ -665,15 +742,45 @@ function evaluateSignalArchive(){
 }
 function deleteSignalArchiveItem(id){signalState.archive=signalState.archive.filter(x=>x.id!==id);safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('رکورد حذف شد')}
 function clearSignalArchive(){if(!signalState.archive.length){toast('آرشیو خالی است');return}if(!confirm('تمام سوابق سیگنال این دستگاه پاک شود؟ این کار قابل بازگشت نیست.'))return;signalState.archive=[];safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('تمام سوابق پاک شد')}
+function signalTp1Reached(x){return !!x.tp1HitAt||['SUCCESS','TP1_ONLY','TP2_SUCCESS'].includes(x.status)}
+function renderSignalPerformance(recent){
+ const panel=document.getElementById('signalPerformancePanel'),stats=document.getElementById('signalPerformanceStats'),detail=document.getElementById('signalPerformanceDetail'),state=document.getElementById('signalPerformanceState'),rows=scannerState.majorRows||[];
+ const on=signalPerformanceEnabled();
+ if(panel)panel.style.display=on?'block':'none';
+ const withData=rows.filter(r=>Array.isArray(r.performanceCandles1m)&&r.performanceCandles1m.length>1).length;
+ if(state)state.textContent=on?(withData?`وضعیت: روشن · داده ۱m برای ${withData} ارز دریافت شده است`:'وضعیت: روشن · داده ۱m در اسکن بعدی دریافت می‌شود'):'وضعیت: خاموش · آرشیو پایه ۱۵ دقیقه‌ای فعال';
+ if(!on||!stats)return;
+ const tracked=recent.filter(x=>x.evaluationMode==='1m');
+ const resolved=tracked.filter(x=>['FAILED','TP1_ONLY','TP2_SUCCESS'].includes(x.status)&&!x.historyIncomplete);
+ const tp1Hits=resolved.filter(signalTp1Reached),tp2Done=resolved.filter(x=>['TP1_ONLY','TP2_SUCCESS'].includes(x.status)),tp2Hits=resolved.filter(x=>x.status==='TP2_SUCCESS'),failed=resolved.filter(x=>x.status==='FAILED'),ambiguous=tracked.filter(x=>x.status==='AMBIGUOUS'),incomplete=tracked.filter(x=>x.historyIncomplete);
+ const times=tracked.filter(x=>x.tp1HitAt&&Number.isFinite(x.createdAt)).map(x=>(x.tp1HitAt-x.createdAt)/60000).filter(x=>x>=0);
+ const rate=(n,d)=>d?(n/d*100).toFixed(1)+'%':'—';
+ const avg=times.length?(times.reduce((a,b)=>a+b,0)/times.length).toFixed(1)+' دقیقه':'—';
+ stats.innerHTML=`
+  <div class="signal-history-stat"><small>سیگنال‌های تعیین‌تکلیف‌شده</small><b>${resolved.length}</b></div>
+  <div class="signal-history-stat"><small>نرخ رسیدن به TP1</small><b class="green">${rate(tp1Hits.length,resolved.length)}</b></div>
+  <div class="signal-history-stat"><small>نرخ TP2 پس از TP1</small><b class="green">${rate(tp2Hits.length,tp2Done.length)}</b></div>
+  <div class="signal-history-stat"><small>حدضرر پیش از TP1</small><b class="red">${failed.length}</b></div>
+  <div class="signal-history-stat"><small>برخورد مبهم ۱m</small><b class="gold">${ambiguous.length}</b></div>
+  <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>${avg}</b></div>`;
+ if(detail)detail.textContent=`رکوردهای ۱m: ${tracked.length} · در انتظار: ${tracked.filter(x=>x.status==='PENDING').length} · تاریخچه ناقص: ${incomplete.length} · میانگین مدت فقط از رکوردهای دارای زمان TP1 محاسبه شده است. رویدادهای مبهم از نرخ‌های موفقیت حذف شده‌اند.`;
+}
 function renderSignalArchive(){
  const days=+(document.getElementById('signalHistoryDays')?.value||7),filter=document.getElementById('signalHistoryStatus')?.value||'SUCCESS',since=Date.now()-days*86400000;
- const recent=signalState.archive.filter(x=>x.createdAt>=since).sort((a,b)=>b.createdAt-a.createdAt),success=recent.filter(x=>x.status==='SUCCESS'),pending=recent.filter(x=>x.status==='PENDING'),failed=recent.filter(x=>x.status==='FAILED');
- const shown=filter==='ALL'?recent:recent.filter(x=>x.status===filter);
- const count=document.getElementById('signalArchiveCount');if(count)count.textContent=`${success.length} موفق`;
- const stats=document.getElementById('signalHistoryStats');if(stats)stats.innerHTML=`<div class="signal-history-stat"><small>موفق</small><b class="green">${success.length}</b></div><div class="signal-history-stat"><small>در انتظار</small><b class="gold">${pending.length}</b></div><div class="signal-history-stat"><small>ناموفق</small><b class="red">${failed.length}</b></div>`;
- const el=document.getElementById('signalHistoryList');if(!el)return;
- if(!shown.length){el.innerHTML=`<div class="signal-empty">${filter==='SUCCESS'?'در بازه انتخاب‌شده هنوز سیگنال موفقی ثبت نشده است.':'در بازه انتخاب‌شده رکوردی وجود ندارد.'}</div>`;return}
- el.innerHTML=shown.map(x=>{const status=x.status==='SUCCESS'?'موفق':x.status==='FAILED'?'حدضرر لمس شد':'در انتظار';const badge=x.status==='SUCCESS'?'signal-history-badge':x.status==='FAILED'?'band-chip resistance':'band-chip';const date=new Date(x.createdAt).toLocaleString('fa-IR');const resolved=x.resolvedAt?`<small>زمان تعیین نتیجه: ${new Date(x.resolvedAt).toLocaleString('fa-IR')}</small>`:'';return `<div class="signal-history-row"><div><div class="signal-top"><div><b>${x.symbol}/USDT</b> <span class="signal-dir ${x.direction==='LONG'?'long':'short'}">${x.direction}</span> <span class="${badge}">${status}</span></div><b>${x.score}/100</b></div><small>زمان ارسال: ${date} · ${x.origin==='MANUAL'?'ارسال دستی':'ارسال خودکار'} · ${x.source}</small><div class="signal-history-price"><span>ورود: ${nfmt(x.entry,6)}</span><span>حدضرر: ${nfmt(x.stop,6)}</span><span>هدف اول: ${nfmt(x.target1,6)}</span></div>${resolved}<small>${x.status==='SUCCESS'?'هدف اول پیش از حدضرر لمس شد.':x.status==='FAILED'?'حدضرر پیش از هدف اول لمس شد.':'نتیجه هنوز با کندل بسته‌شده تأیید نشده است.'}</small></div><button class="btn" data-delete-signal="${x.id}">حذف</button></div>`}).join('');
+ const recent=signalState.archive.filter(x=>x.createdAt>=since).sort((a,b)=>b.createdAt-a.createdAt),tp1=recent.filter(signalTp1Reached),pending=recent.filter(x=>x.status==='PENDING'),failed=recent.filter(x=>x.status==='FAILED');
+ let shown=recent;
+ if(filter==='SUCCESS')shown=recent.filter(signalTp1Reached);else if(filter!=='ALL')shown=recent.filter(x=>x.status===filter);
+ const count=document.getElementById('signalArchiveCount');if(count)count.textContent=`${tp1.length} با TP1`;
+ const summary=document.getElementById('signalHistoryStats');if(summary)summary.innerHTML=`<div class="signal-history-stat"><small>TP1 لمس‌شده</small><b class="green">${tp1.length}</b></div><div class="signal-history-stat"><small>در انتظار</small><b class="gold">${pending.length}</b></div><div class="signal-history-stat"><small>حدضرر پیش از TP1</small><b class="red">${failed.length}</b></div>`;
+ const el=document.getElementById('signalHistoryList');renderSignalPerformance(recent);if(!el)return;
+ if(!shown.length){el.innerHTML=`<div class="signal-empty">${filter==='SUCCESS'?'در بازه انتخاب‌شده سیگنالی که TP1 را لمس کرده باشد وجود ندارد.':'در بازه انتخاب‌شده رکوردی وجود ندارد.'}</div>`;return}
+ el.innerHTML=shown.map(x=>{
+  const status=x.status==='TP2_SUCCESS'?'هدف دوم لمس شد':x.status==='TP1_ONLY'?'TP1 لمس شد؛ سپس حدضرر':x.status==='AMBIGUOUS'?'برخورد مبهم در ۱m':x.status==='SUCCESS'?'TP1 لمس شد · نسخه پایه':x.status==='FAILED'?'حدضرر پیش از TP1':x.tp1HitAt?'TP1 لمس شد · در انتظار ادامه':'در انتظار نتیجه';
+  const badge=['SUCCESS','TP1_ONLY','TP2_SUCCESS'].includes(x.status)?'signal-history-badge':x.status==='FAILED'||x.status==='AMBIGUOUS'?'band-chip resistance':'band-chip';
+  const date=new Date(x.createdAt).toLocaleString('fa-IR'),resolved=x.resolvedAt?`<small>زمان تعیین نتیجه: ${new Date(x.resolvedAt).toLocaleString('fa-IR')} · ${x.resolution||'—'}</small>`:'';
+  const note=x.evaluationNote?x.evaluationNote:x.status==='FAILED'?'حدضرر پیش از هدف اول لمس شد.':x.status==='SUCCESS'?'هدف اول در حالت پایه ۱۵ دقیقه‌ای لمس شد.':x.status==='PENDING'?'نتیجه هنوز با کندل بسته‌شده تأیید نشده است.':'';
+  return `<div class="signal-history-row"><div><div class="signal-top"><div><b>${x.symbol}/USDT</b> <span class="signal-dir ${x.direction==='LONG'?'long':'short'}">${x.direction}</span> <span class="${badge}">${status}</span></div><b>${x.score}/100</b></div><small>زمان ارسال: ${date} · ${x.origin==='MANUAL'?'ارسال دستی':'ارسال خودکار'} · ${x.source} · ${x.evaluationMode==='1m'?'Performance 1m':'Base 15m'}</small><div class="signal-history-price"><span>ورود: ${nfmt(x.entry,6)}</span><span>حدضرر: ${nfmt(x.stop,6)}</span><span>TP1: ${nfmt(x.target1,6)}</span><span>TP2: ${nfmt(x.target2,6)}</span></div>${resolved}<small>${note}</small></div><button class="btn" data-delete-signal="${x.id}">حذف</button></div>`;
+ }).join('');
  el.querySelectorAll('[data-delete-signal]').forEach(b=>b.addEventListener('click',()=>deleteSignalArchiveItem(b.dataset.deleteSignal)));
 }
 function processSignalTransitions(){const now=Date.now();for(const r of scannerState.majorRows||[]){const s=r.signal||{},key=r.baseSymbol,prev=signalState.last[key];if(s.dataQuality!=='candles'){continue}const actionable=['LONG','SHORT'].includes(s.direction)&&s.score>=70;
@@ -695,7 +802,7 @@ async function refreshMajorAnalysis(provider=scannerState.provider){if(!provider
   const samples=recordBandSamples(tracked);scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,source:t.source||providerNames[provider],candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است']}}});
  }else{
   const base=scannerState.apiBase|| (provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com');
-  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15};row.signal=buildMajorSignal(row,candles1m,candles15,h1);row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
+  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);let performanceCandles1m=null;if(signalPerformanceEnabled()){try{performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base)}catch(e){console.warn('Performance 1m data unavailable for '+baseSymbol(t),e)}}const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m};row.signal=buildMajorSignal(row,candles1m,candles15,h1);row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
   scannerState.majorRows=results.filter(x=>!x.error);if(!scannerState.majorRows.length)throw new Error(results.find(x=>x.error)?.error||'کندل ارزهای اصلی دریافت نشد');
   const sampleItems=tracked.filter(t=>scannerState.majorRows.some(r=>r.baseSymbol===baseSymbol(t)));recordBandSamples(sampleItems);
  }
@@ -902,6 +1009,19 @@ const rvToggle=el('rangeVolatilityToggle'),rvState=el('rangeVolatilityState');
 try{rvToggle.checked=localStorage.getItem(ADVANCED_MODE_KEY)==='true'}catch(e){}
 function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(ADVANCED_MODE_KEY,String(on));localStorage.setItem('ccap.rangeVolatility.enabled.v1',String(on))}catch(e){}rvState.textContent=on?'وضعیت: روشن · قابلیت‌های هوشمند پیاده‌سازی‌شده فعال‌اند':'وضعیت: خاموش · موتور پایه فعال است';document.documentElement.dataset.advancedIntelligence=on?'on':'off';}
 rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
+const signalPerformanceToggle=el('signalPerformanceToggle');
+try{signalPerformanceToggle.checked=signalPerformanceEnabled()}catch(e){}
+function syncSignalPerformanceToggle(){
+ const on=!!signalPerformanceToggle.checked;
+ try{localStorage.setItem(SIGNAL_PERFORMANCE_KEY,String(on))}catch(e){}
+ renderSignalArchive();
+ if(on){
+  const hasData=(scannerState.majorRows||[]).some(r=>Array.isArray(r.performanceCandles1m)&&r.performanceCandles1m.length>1);
+  toast(hasData?'Signal Performance Lab فعال شد':'فعال شد؛ برای دریافت کندل‌های ۱ دقیقه‌ای، تحلیل بازار را دوباره اجرا کن');
+ }else toast('Signal Performance Lab غیرفعال شد؛ آرشیو پایه ادامه دارد');
+}
+signalPerformanceToggle.addEventListener('change',syncSignalPerformanceToggle);
+renderSignalArchive();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
 })();
