@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.29 — پایش ابری مستقل بازار حتی هنگام بسته‌بودن اپ، دریافت آخرین تحلیل‌های سرور و اعلان Web Push آیفون؛ معاملات آزمایشی و بدون سفارش واقعی.",
+  "description": "CCAP v0.9.30 — داشبورد فارسی مدیریت سرمایه، اسکن ابری مستقل بازار، Snapshot تا ۲۰۰ قرارداد USDT، تحلیل چندتایم‌فریم و اعلان امن Web Push؛ Paper Trading only.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
