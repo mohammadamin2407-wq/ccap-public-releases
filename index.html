@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.27 · Glass UI</title>
+<title>CCAP v0.9.28 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -137,7 +137,7 @@ button,input,select,textarea{font:inherit}
 
 <section class="section" id="market">
  <div class="card">
-  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۲۷ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.27</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
+  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۲۸ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.28</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
   <div class="market-toolbar">
    <label class="sub">منبع داده</label><select id="marketSource"><option value="auto" selected>خودکار · Bybit ← KuCoin ← Gate.io ← Binance ← CoinPaprika</option><option value="bybit">Bybit USDT Perpetual</option><option value="kucoin">KuCoin USDT Futures</option><option value="gate">Gate.io USDT Futures</option><option value="futures">Binance USDⓈ-M Futures</option><option value="spot">Binance Spot</option><option value="coinpaprika">CoinPaprika · داده تجمیعی بازار</option></select>
    <label class="sub">حداقل حجم ۲۴ساعته</label><select id="minVolume"><option value="1000" selected>۱٬۰۰۰ دلار / USDT</option><option value="2000">۲٬۰۰۰ دلار / USDT</option><option value="5000">۵٬۰۰۰ دلار / USDT</option><option value="10000">۱۰٬۰۰۰ دلار / USDT</option><option value="25000">۲۵٬۰۰۰ دلار / USDT</option><option value="50000">۵۰٬۰۰۰ دلار / USDT</option><option value="100000">۱۰۰٬۰۰۰ دلار / USDT</option><option value="500000">۵۰۰٬۰۰۰ دلار / USDT</option><option value="1000000">۱ میلیون دلار / USDT</option><option value="5000000">۵ میلیون دلار / USDT</option><option value="10000000">۱۰ میلیون دلار / USDT</option><option value="25000000">۲۵ میلیون دلار / USDT</option><option value="50000000">۵۰ میلیون دلار / USDT</option></select>
@@ -159,6 +159,31 @@ button,input,select,textarea{font:inherit}
     <div class="market-note" id="liveStrategyState" style="margin-top:8px"></div>
    </div>
    <div class="market-note" id="liveStrategyStatus" style="margin-top:8px">وضعیت: خاموش · امتیازدهی پایه فعال است</div>
+  </div>
+  <div class="card" id="backgroundScannerPanel" style="margin-top:12px;border-color:rgba(138,183,255,.35)">
+   <div class="card-head"><div><h2>Background Scanner · اسکن مستقل از آیفون</h2><div class="sub">اسکن روی سرور اجرا می‌شود؛ حتی اگر CCAP بسته باشد. آیفون فقط تنظیمات و اعلان‌ها را مدیریت می‌کند.</div></div><span class="pill">Server Cron · 1m</span></div>
+   <div class="market-toolbar" style="align-items:end">
+    <div class="field" style="min-width:220px;flex:2"><label for="bgWorkerUrl">آدرس Cloudflare Worker</label><input id="bgWorkerUrl" type="url" placeholder="https://ccap-background-scanner.YOUR-SUBDOMAIN.workers.dev" dir="ltr"></div>
+    <div class="field" style="min-width:180px;flex:1"><label for="bgApiToken">کلید اتصال شخصی</label><input id="bgApiToken" type="password" placeholder="CCAP_API_TOKEN" dir="ltr" autocomplete="off"></div>
+    <button class="btn" id="bgConnectBtn">اتصال / بررسی سرور</button>
+   </div>
+   <div class="strategy-option" style="margin-top:10px;padding:12px">
+    <label style="font-weight:700"><input type="checkbox" id="bgRunToggle"> فعال‌سازی اسکن خودکار حتی هنگام بسته‌بودن اپ</label>
+    <div class="market-note" id="bgRunState" style="margin-top:6px">خاموش · ابتدا Worker را متصل کن</div>
+   </div>
+   <div class="grid stats" style="margin-top:10px">
+    <div class="card"><div class="stat-label">وضعیت موتور</div><div class="stat-value" id="bgServerStatus">قطع</div><div class="stat-foot" id="bgServerSource">—</div></div>
+    <div class="card"><div class="stat-label">آخرین اسکن موفق</div><div class="stat-value" id="bgLastSuccess" style="font-size:15px">—</div><div class="stat-foot">زمان UTC/سرور</div></div>
+    <div class="card"><div class="stat-label">نمادهای بازار</div><div class="stat-value" id="bgUniverseCount">—</div><div class="stat-foot">تازه‌سازی تیکرها هر دقیقه</div></div>
+    <div class="card"><div class="stat-label">اسکن عمیق اخیر</div><div class="stat-value" id="bgDeepScan">—</div><div class="stat-foot" id="bgFullCycle">—</div></div>
+   </div>
+   <div class="actions" style="margin-top:12px">
+    <button class="btn" id="bgEnablePushBtn">فعال‌سازی اعلان آیفون</button>
+    <button class="btn" id="bgTestPushBtn" disabled>ارسال اعلان آزمایشی</button>
+    <button class="btn" id="bgRefreshStatusBtn">بروزرسانی وضعیت</button>
+    <span class="sub" id="bgPushState">اعلان هنوز فعال نشده است.</span>
+   </div>
+   <div class="notice" style="margin-top:12px">تیکرهای ۲۰۰ قرارداد USDT Perpetual هر دقیقه به‌روز می‌شوند؛ برای کنترل محدودیت API، تحلیل کندلی ۱۰ نماد در هر دقیقه چرخشی اجرا می‌شود، بنابراین یک دور تحلیل عمیق همه ۲۰۰ نماد حدود ۲۰ دقیقه طول می‌کشد. منبع این موتور Binance USDⓈ-M Futures است. برای دریافت Push در آیفون باید CCAP را از Safari به Home Screen اضافه کنی و اجازه اعلان بدهی. اسکن فقط خواندنی است و هیچ سفارش واقعی ثبت نمی‌کند.</div>
   </div>
   <div class="scan-progress" style="margin-top:14px"><i id="scanProgress"></i></div>
   <div class="sub" id="scanMeta" style="margin-top:7px">داده‌ها مستقیماً از API عمومی بازار دریافت می‌شوند؛ برای اسکن زنده اتصال اینترنت و دسترسی مرورگر به API صرافی لازم است. در صورت خطای CORS یا محدودیت شبکه، منبع داده را تغییر بده.</div>
@@ -985,6 +1010,22 @@ document.getElementById('bandStepMode').addEventListener('change',()=>{renderRan
 
 document.getElementById('scanNow').addEventListener('click',scanMarket);document.querySelectorAll('#marketFilters button').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('#marketFilters button').forEach(q=>q.classList.toggle('active',q===b));scannerState.filter=b.dataset.filter;renderMarket()}));document.getElementById('autoScan').addEventListener('click',()=>{let b=document.getElementById('autoScan');if(scannerState.auto){clearInterval(scannerState.timer);scannerState.auto=false;b.textContent='فعال‌سازی اسکن ۶۰ ثانیه‌ای';toast('اسکن خودکار متوقف شد')}else{scannerState.auto=true;scannerState.timer=setInterval(()=>{if(document.getElementById('market').classList.contains('active'))scanMarket()},60000);b.textContent='توقف اسکن خودکار';scanMarket();toast('اسکن خودکار هر ۶۰ ثانیه فعال شد')}});
 
+const BG_WORKER_URL_KEY='ccap.background.workerUrl.v1';
+const BG_API_TOKEN_KEY='ccap.background.apiToken.v1';
+function bgConfig(){return {url:(localStorage.getItem(BG_WORKER_URL_KEY)||'').trim().replace(/\/+$/,''),token:(localStorage.getItem(BG_API_TOKEN_KEY)||'').trim()}}
+function bgSetMessage(id,message){const n=document.getElementById(id);if(n)n.textContent=message}
+function bgBase64UrlBytes(value){const pad='='.repeat((4-value.length%4)%4),raw=atob((value+pad).replace(/-/g,'+').replace(/_/g,'/'));const out=new Uint8Array(raw.length);for(let i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);return out}
+async function bgRequest(path,method='GET',body=null,auth=true){const c=bgConfig();if(!c.url)throw new Error('آدرس Worker وارد نشده است.');const headers={'Accept':'application/json'};if(auth){if(!c.token)throw new Error('کلید اتصال وارد نشده است.');headers.Authorization='Bearer '+c.token}if(body!==null)headers['Content-Type']='application/json';const response=await fetch(c.url+path,{method,headers,body:body===null?undefined:JSON.stringify(body),cache:'no-store'});const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.error||('HTTP '+response.status));return payload}
+function bgSaveInputs(){localStorage.setItem(BG_WORKER_URL_KEY,document.getElementById('bgWorkerUrl').value.trim());localStorage.setItem(BG_API_TOKEN_KEY,document.getElementById('bgApiToken').value.trim())}
+function bgCurrentStrategySettings(){return {strategyEnabled:liveStrategyEnabled(),strategyMode:liveStrategyMode(),strategyPicks:liveStrategyPicks(),universeLimit:200,batchSize:10,minQuoteVolume:Number(document.getElementById('minVolume')?.value||1000000)}}
+async function bgSyncSettings(enabled){const payload=Object.assign({},bgCurrentStrategySettings(),{enabled:!!enabled});return bgRequest('/api/settings','POST',payload,true)}
+async function bgRefreshStatus(){const toggle=document.getElementById('bgRunToggle'),test=document.getElementById('bgTestPushBtn');try{const data=await bgRequest('/api/status','GET',null,true);const st=data.status||{},cfg=data.settings||{};if(toggle)toggle.checked=!!cfg.enabled;bgSetMessage('bgServerStatus',st.status==='ok'?'فعال':st.status==='paused'?'متوقف':st.status==='error'?'خطا':'آماده');bgSetMessage('bgServerSource',st.source||'Binance Futures');bgSetMessage('bgLastSuccess',st.lastSuccessAt?new Date(st.lastSuccessAt).toLocaleString():'هنوز اسکن موفق ثبت نشده');bgSetMessage('bgUniverseCount',st.universeCount??'—');bgSetMessage('bgDeepScan',st.deepScannedCount??'—');bgSetMessage('bgFullCycle',st.approximateFullCycleMinutes?'چرخه تحلیل کامل حدود '+st.approximateFullCycleMinutes+' دقیقه':'—');bgSetMessage('bgRunState',cfg.enabled?'روشن · اسکن سرور مستقل از اپ فعال است': 'خاموش · زمان‌بندی سرور متوقف است');if(test)test.disabled=false;if(st.status==='error')bgSetMessage('bgRunState','خطای اسکن: '+(st.error||'نامشخص'));return data}catch(e){bgSetMessage('bgServerStatus','قطع');bgSetMessage('bgServerSource','اتصال برقرار نیست');bgSetMessage('bgRunState','خطا: '+e.message);if(test)test.disabled=true;throw e}}
+async function bgConnect(){bgSaveInputs();try{const health=await bgRequest('/api/health','GET',null,false);if(!health.ok)throw new Error('پاسخ سلامت Worker معتبر نیست.');await bgRefreshStatus();await bgSyncSettings(!!document.getElementById('bgRunToggle').checked);toast('اتصال موتور اسکن سرور برقرار شد.')}catch(e){toast('اتصال Worker ناموفق: '+e.message)}}
+async function bgToggleScanner(){const toggle=document.getElementById('bgRunToggle'),enabled=!!toggle.checked;try{bgSaveInputs();await bgSyncSettings(enabled);await bgRefreshStatus();toast(enabled?'اسکن خودکار سرور فعال شد؛ حتی هنگام بسته‌بودن اپ اجرا می‌شود.':'اسکن خودکار سرور متوقف شد.')}catch(e){toggle.checked=!enabled;bgSetMessage('bgRunState','خطا: '+e.message);toast('تغییر وضعیت اسکن ناموفق بود: '+e.message)}}
+async function bgEnablePush(){try{if(!('serviceWorker'in navigator)||!('PushManager'in window)||!('Notification'in window))throw new Error('این مرورگر Web Push را پشتیبانی نمی‌کند.');if(Notification.permission==='denied')throw new Error('مجوز اعلان در تنظیمات iOS مسدود شده؛ از Settings اعلان CCAP را مجاز کن.');const permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();if(permission!=='granted')throw new Error('مجوز اعلان داده نشد.');bgSaveInputs();const config=await bgRequest('/api/public-config','GET',null,false);if(!config.vapidPublicKey||!config.pushReady)throw new Error('کلیدهای VAPID روی سرور تنظیم نشده‌اند.');const registration=await navigator.serviceWorker.ready;let subscription=await registration.pushManager.getSubscription();if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bgBase64UrlBytes(config.vapidPublicKey)});await bgRequest('/api/push/subscribe','POST',{subscription:subscription.toJSON()},true);bgSetMessage('bgPushState','اعلان آیفون فعال شد؛ یک اعلان آزمایشی بفرست.');document.getElementById('bgTestPushBtn').disabled=false;toast('اشتراک اعلان آیفون ثبت شد.')}catch(e){bgSetMessage('bgPushState','خطا: '+e.message);toast('فعال‌سازی Push ناموفق: '+e.message)}}
+async function bgTestPush(){try{const result=await bgRequest('/api/push/test','POST',{},true);if(!result.ok)throw new Error('سرویس Push اعلان را تحویل نگرفت.');bgSetMessage('bgPushState','درخواست اعلان آزمایشی ارسال شد؛ تحویل نهایی به سرویس Push و iOS وابسته است.');toast('درخواست اعلان آزمایشی ارسال شد.')}catch(e){bgSetMessage('bgPushState','خطا: '+e.message);toast('ارسال تست ناموفق: '+e.message)}}
+window.ccapBackgroundSync=async function(){const c=bgConfig();if(!c.url||!c.token)return;try{const current=await bgRequest('/api/status','GET',null,true);await bgSyncSettings(!!current.settings?.enabled)}catch(e){console.warn('CCAP background settings sync failed',e)}};
+(()=>{const url=document.getElementById('bgWorkerUrl'),token=document.getElementById('bgApiToken');url.value=localStorage.getItem(BG_WORKER_URL_KEY)||'';token.value=localStorage.getItem(BG_API_TOKEN_KEY)||'';url.addEventListener('change',bgSaveInputs);token.addEventListener('change',bgSaveInputs);document.getElementById('bgConnectBtn').addEventListener('click',bgConnect);document.getElementById('bgRunToggle').addEventListener('change',bgToggleScanner);document.getElementById('bgEnablePushBtn').addEventListener('click',bgEnablePush);document.getElementById('bgTestPushBtn').addEventListener('click',bgTestPush);document.getElementById('bgRefreshStatusBtn').addEventListener('click',()=>bgRefreshStatus().catch(()=>{}));if(url.value&&token.value)bgRefreshStatus().catch(()=>{});})();
 render();
 </script><script>
 (()=>{
@@ -1252,6 +1293,7 @@ function syncLiveStrategyControls(){
  if(liveStrategyState)liveStrategyState.textContent=mode==='adaptive'?'تشخیص رنج، روند، مومنتوم و شکست؛ انتخاب خودکار استراتژی‌های مناسب.':'نتیجه فقط با حداقل دو استراتژی قابل ارزیابی و توافق جهت‌دار تأیید می‌شود.';
  try{localStorage.setItem(LIVE_STRATEGY_ENABLED_KEY,String(enabled));localStorage.setItem(LIVE_STRATEGY_MODE_KEY,mode);localStorage.setItem(LIVE_STRATEGY_PICKS_KEY,JSON.stringify(selected.map(n=>n.value)))}catch(e){}
  refreshLiveStrategyViews();
+  if(window.ccapBackgroundSync)window.ccapBackgroundSync();
 }
 if(liveStrategyToggle){liveStrategyToggle.checked=liveStrategyEnabled();if(liveStrategyModeSelect)liveStrategyModeSelect.value=liveStrategyMode();const saved=liveStrategyPicks();document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.checked=saved.includes(n.value));liveStrategyToggle.addEventListener('change',syncLiveStrategyControls);liveStrategyModeSelect?.addEventListener('change',syncLiveStrategyControls);document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.addEventListener('change',syncLiveStrategyControls));syncLiveStrategyControls()}
 const riskCapitalToggle=el('riskCapitalToggle');loadRiskSettings();if(riskCapitalToggle)riskCapitalToggle.checked=riskCapitalEnabled();
@@ -1281,7 +1323,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
 <script>
 (()=>{
  const PANEL_ID='ccapCloudMonitorPanel', API_KEY='ccap.cloud.apiEndpoint.v1';
- let apiBase='', refreshTimer=null, vapidPublicKey=null, healthData=null;
+ let apiBase='', refreshTimer=null, vapidPublicKey=null, healthData=null, pushRegistration=null;
  const root=document.getElementById('market');
  if(!root||document.getElementById(PANEL_ID))return;
  const panel=document.createElement('div');panel.id=PANEL_ID;panel.className='card';panel.style.marginBottom='16px';
@@ -1354,7 +1396,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  function decodeKey(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/')+padding);return Uint8Array.from(raw,c=>c.charCodeAt(0))}
  async function getRegistration(){if(!('serviceWorker'in navigator))throw new Error('Service Worker در این مرورگر پشتیبانی نمی‌شود');return await navigator.serviceWorker.ready}
  async function refreshPushButton(){
-  try{const reg=await getRegistration(),sub=await reg.pushManager.getSubscription();el('ccapCloudPush').textContent=sub?'غیرفعال‌سازی اعلان‌ها':'فعال‌سازی اعلان‌ها'}catch(e){el('ccapCloudPush').textContent='اعلان‌ها پشتیبانی نمی‌شوند'}
+  try{pushRegistration=await getRegistration();const sub=await pushRegistration.pushManager.getSubscription();el('ccapCloudPush').textContent=sub?'غیرفعال‌سازی اعلان‌ها':'فعال‌سازی اعلان‌ها'}catch(e){pushRegistration=null;el('ccapCloudPush').textContent='اعلان‌ها پشتیبانی نمی‌شوند'}
  }
  async function togglePush(){
   try{
