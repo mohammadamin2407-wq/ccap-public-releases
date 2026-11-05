@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.25 · Glass UI</title>
+<title>CCAP v0.9.26 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -173,7 +173,7 @@ button,input,select,textarea{font:inherit}
   <div class="card">
    <div class="card-head"><div><h2>رتبه‌بندی فرصت‌های بازار</h2><div class="sub">امتیاز ۰ تا ۱۰۰ بر اساس حجم، مومنتوم، روند، شکست و داده‌های مشتقه در صورت دسترسی</div></div><span class="pill" id="marketCount">۰ نماد</span></div>
    <div class="filter-pills" id="marketFilters"><button class="active" data-filter="all">همه</button><button data-filter="hot">حرکت شارپ</button><button data-filter="volume">جهش حجم</button><button data-filter="breakout">شکست مقاومت</button><button data-filter="risk">ریسک بالا</button></div>
-   <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>نماد</th><th>قیمت</th><th>۲۴ساعت</th><th>حجم ۲۴ساعت</th><th>جهش حجم ۵m</th><th>RSI</th><th>امتیاز</th><th>وضعیت</th></tr></thead><tbody id="marketRows"><tr><td colspan="8" class="empty">برای شروع اسکن زنده بازار را اجرا کن.</td></tr></tbody></table></div>
+   <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>نماد</th><th>قیمت</th><th>۲۴ساعت</th><th>حجم ۲۴ساعت</th><th>جهش حجم ۵m</th><th>RSI</th><th>امتیاز</th><th>استراتژی</th><th>وضعیت</th></tr></thead><tbody id="marketRows"><tr><td colspan="9" class="empty">برای شروع اسکن زنده بازار را اجرا کن.</td></tr></tbody></table></div>
    <div id="marketMore" style="display:flex;justify-content:center;margin-top:12px"></div><div class="market-note" style="margin-top:10px">امتیازها ابزار غربالگری هستند، نه احتمال آماری پامپ و نه توصیه خرید. ارزهای کم‌عمق، دستکاری‌شده یا دارای خبر ناگهانی ممکن است سیگنال کاذب ایجاد کنند.</div>
   </div>
   <div class="card">
@@ -404,24 +404,106 @@ const LIVE_STRATEGY_NAMES={trend:'Trend Following',liquidity:'Liquidity Sweep',v
 function liveStrategyEnabled(){try{return localStorage.getItem(LIVE_STRATEGY_ENABLED_KEY)==='true'}catch(e){return false}}
 function liveStrategyMode(){try{return localStorage.getItem(LIVE_STRATEGY_MODE_KEY)||'adaptive'}catch(e){return'adaptive'}}
 function liveStrategyPicks(){try{const a=JSON.parse(localStorage.getItem(LIVE_STRATEGY_PICKS_KEY)||'["trend","liquidity","volume","breakout","momentum"]');return Array.isArray(a)?a.filter(x=>Object.prototype.hasOwnProperty.call(LIVE_STRATEGY_NAMES,x)):[]}catch(e){return['trend','liquidity','volume','breakout','momentum']}}
-function adaptiveStrategySet(regime,x){if(regime==='breakout')return['breakout','volume','momentum'];if(regime==='range')return['liquidity','momentum'];if(regime==='choppy')return['trend','liquidity'];if(x&&x.emaFast&&x.emaSlow&&x.emaFast!==x.emaSlow)return['trend','momentum','volume'];return['trend','volume','momentum']}
-function scoreLiveStrategies(x,mode=liveStrategyMode(),picks=liveStrategyPicks()){
- const change=Number(x.change5m??x.change15m??x.change15??0),h=Number(x.change1h??0),rv=x.rangeVolatility,rvRegime=rv&&rv.regime;
- const up=!!(x.emaFast&&x.emaSlow&&x.emaFast>x.emaSlow),down=!!(x.emaFast&&x.emaSlow&&x.emaFast<x.emaSlow),vr=Number(x.volRatio??x.volumeRatio??0),r=Number(x.rsi);
- const regime=rv?.choppy?'choppy':rv?.highVolRange?'range':rv?.expansion?'breakout':Math.abs(h)>.35?'trend':'mixed';
- const selected=mode==='adaptive'?adaptiveStrategySet(regime,x):picks,scores={};
- for(const key of selected){let l=0,sh=0;
-  if(key==='trend'){if(up&&h>0)l=82;else if(down&&h<0)sh=82;else if(up)l=55;else if(down)sh=55}
-  if(key==='liquidity'){const bars=x.candles15?getClosedCandles(x.candles15):[],k=bars[bars.length-1];if(k){const o=+k[1],hi=+k[2],lo=+k[3],c=+k[4],body=Math.max(Math.abs(c-o),Math.abs(c)*.00001),lower=Math.min(o,c)-lo,upper=hi-Math.max(o,c);if(lower>body*1.5&&c>lo+(hi-lo)*.55)l=72;if(upper>body*1.5&&c<lo+(hi-lo)*.45)sh=72}if(x.buyRatio!=null){if(x.buyRatio>.58)l=Math.max(l,58);if(x.buyRatio<.42)sh=Math.max(sh,58)}}
-  if(key==='volume'&&vr>=1.5){if(change>0)l=Math.min(88,58+(vr-1.5)*12);else if(change<0)sh=Math.min(88,58+(vr-1.5)*12)}
-  if(key==='breakout'&&(x.breakout||x.breakoutUp||x.breakoutDown)){if(x.breakoutDown||change<0)sh=78;else l=78}
-  if(key==='momentum'&&Number.isFinite(r)){if(r>=55&&r<72&&change>0)l=72;if(r<=45&&r>28&&change<0)sh=72}
-  scores[key]={long:l,short:sh};
- }
- const count=Math.max(1,selected.length),long=Math.round(selected.reduce((a,k)=>a+(scores[k]?.long||0),0)/count),short=Math.round(selected.reduce((a,k)=>a+(scores[k]?.short||0),0)/count);
- return{selected,scores,long,short,regime,mode};
+
+function detectLiveStrategyRegime(x){
+ const rv=x.rangeVolatility||null,vol=Number(x.volRatio||0),move=Number(x.change5m??x.change15??0),hour=Number(x.change1h||0),gap=Number(x.trendStrengthPct||0),range=Number(x.rangePct||0),crosses=Number(x.emaCrosses||0);
+ if(rv?.expansion||((x.breakout||x.breakoutUp||x.breakoutDown)&&vol>=1.2))return 'breakout';
+ if(rv?.choppy||rv?.highVolRange||x.sweepLow||x.sweepHigh||crosses>=6||(gap>0&&gap<.045&&range>0&&range<1.4))return 'range';
+ if(gap>=.06&&Math.abs(hour)>=.12)return 'trend';
+ if(Math.abs(move)>=.3)return 'momentum';
+ return 'mixed';
 }
-function applyLiveStrategyToMarketRow(x){if(!liveStrategyEnabled()||x.isAggregated)return x;const result=scoreLiveStrategies(x);if(!result.selected.length)return x;const strategyScore=Math.max(result.long,result.short),baseScore=Number(x.score)||0;x.baseScore=baseScore;x.strategyEngine={...result,direction:result.long-result.short>=12?'LONG':result.short-result.long>=12?'SHORT':'WAIT'};x.score=Math.max(0,Math.min(100,Math.round(baseScore*.65+strategyScore*.35)));x.label=x.score>=75?'مومنتوم قوی':x.score>=65?'کاندید حرکت شارپ':x.score>=48?'زیرنظر':'ضعیف';x.reasons=[...(x.reasons||[]),'Live Strategy: '+result.selected.map(k=>LIVE_STRATEGY_NAMES[k]).join(' + ')+' · '+x.strategyEngine.direction];if(x.strategyEngine.direction==='WAIT')x.risks=[...(x.risks||[]),'استراتژی‌های فعال همگرایی جهت‌دار کافی ندارند'];return x}
+function adaptiveStrategySet(regime,x){
+ if(regime==='breakout')return ['breakout','volume','momentum'];
+ if(regime==='range')return ['liquidity','trend'];
+ if(regime==='trend')return ['trend','momentum','volume'];
+ if(regime==='momentum')return ['momentum','volume','trend'];
+ return ['trend','liquidity','momentum'];
+}
+function scoreOneLiveStrategy(key,x){
+ const has=k=>x[k]!==null&&x[k]!==undefined&&Number.isFinite(Number(x[k]));
+ const out={key,long:0,short:0,direction:'WAIT',available:true,reasons:[],risks:[]};
+ const add=(side,points,reason)=>{out[side]=Math.max(out[side],Math.min(100,points));if(reason)out.reasons.push(reason)};
+ const move=Number(x.change5m??x.change15??x.change15m??0),hour=Number(x.change1h||0),vol=Number(x.volRatio??x.volumeRatio??0),rsiValue=Number(x.rsi);
+ if(key==='trend'){
+  if(!has('emaFast')||!has('emaSlow')||(!has('change1h')&&!has('change5m')&&!has('change15')))return {...out,available:false,risks:['EMA یا تغییر قیمت برای بررسی روند موجود نیست']};
+  const up=Number(x.emaFast)>Number(x.emaSlow),side=up?'long':'short',alignment=up?hour:-hour;
+  add(side,54,'EMA 9/21 جهت پایه روند را مشخص می‌کند');
+  if(alignment>=.12)add(side,out[side]+24,'تغییر یک‌ساعته با روند EMA هم‌جهت است');
+  else if(alignment<-.12)add(up?'short':'long',22,'تغییر یک‌ساعته با روند EMA تعارض دارد');
+  if((up&&move>0)||(!up&&move<0))add(side,out[side]+12,'تغییر کوتاه‌مدت نیز جهت روند را همراهی می‌کند');
+  if(has('trendStrengthPct')&&Number(x.trendStrengthPct)<.025)out.risks.push('فاصله EMAها کم است؛ قدرت روند محدود است');
+ }else if(key==='liquidity'){
+  const source=x.strategyCandles5m||x.candles5m||x.candles15,bars=source?getClosedCandles(source):[];
+  if(bars.length<12)return {...out,available:false,risks:['تاریخچه کندل کافی برای بررسی Sweep نقدینگی موجود نیست']};
+  const last=bars[bars.length-1],prior=bars.slice(-13,-1),o=+last[1],hi=+last[2],lo=+last[3],close=+last[4],body=Math.max(Math.abs(close-o),Math.abs(close)*.00001),priorLow=Math.min(...prior.map(k=>+k[3])),priorHigh=Math.max(...prior.map(k=>+k[2])),lower=Math.min(o,close)-lo,upper=hi-Math.max(o,close),sweepLow=lo<priorLow&&close>priorLow&&close>o,sweepHigh=hi>priorHigh&&close<priorHigh&&close<o;
+  if(sweepLow)add('long',92,'کف اخیر جاروب شده و قیمت بالای آن با کندل صعودی بسته شده است');
+  else if(lower>body*1.5&&close>lo+(hi-lo)*.6)add('long',68,'سایه پایینی بلند؛ نشانه احتمالی رد قیمت در کف');
+  if(sweepHigh)add('short',92,'سقف اخیر جاروب شده و قیمت زیر آن با کندل نزولی بسته شده است');
+  else if(upper>body*1.5&&close<lo+(hi-lo)*.4)add('short',68,'سایه بالایی بلند؛ نشانه احتمالی رد قیمت در سقف');
+  out.risks.push('Liquidity Sweep از OHLC کندل تخمین زده می‌شود؛ سفارش پنهان یا نقدینگی واقعی دفتر سفارش نیست');
+ }else if(key==='volume'){
+  if(!has('volRatio'))return {...out,available:false,risks:['نسبت حجم کندل در این منبع موجود نیست']};
+  const provider=x.provider||'',hasFlow=(provider==='futures'||provider==='spot')&&has('buyRatio')&&Number(x.buyRatio)>0&&Number(x.buyRatio)<=1;
+  if(vol>=1.25&&hasFlow&&Number(x.buyRatio)>=.57)add('long',Math.min(95,78+(vol-1.25)*8),'حجم بالاتر از میانگین و نسبت خرید تهاجمی تأییدکننده است');
+  else if(vol>=1.25&&hasFlow&&Number(x.buyRatio)<=.43)add('short',Math.min(95,78+(vol-1.25)*8),'حجم بالاتر از میانگین و نسبت فروش تهاجمی تأییدکننده است');
+  else if(vol>=1.5&&move>.03)add('long',62,'حجم کندل بالا و بدنه کوتاه‌مدت صعودی است');
+  else if(vol>=1.5&&move<-.03)add('short',62,'حجم کندل بالا و بدنه کوتاه‌مدت نزولی است');
+  else out.risks.push('افزایش حجم جهت روشن یا شدت کافی برای تأیید ندارد');
+  if(!hasFlow)out.risks.push('نسبت خرید تهاجمی در این منبع معتبر نیست؛ ارزیابی فقط بر پایه حجم و تغییر کندل است');
+ }else if(key==='breakout'){
+  if(!has('volRatio'))return {...out,available:false,risks:['نسبت حجم برای تأیید شکست موجود نیست']};
+  const up=!!(x.breakout||x.breakoutUp),down=!!(x.breakoutDown||x.breakdown);
+  if(up&&vol>=1.2)add('long',92,'بسته‌شدن بالای سقف محدوده اخیر همراه حجم تأییدی');
+  else if(down&&vol>=1.2)add('short',92,'بسته‌شدن زیر کف محدوده اخیر همراه حجم تأییدی');
+  else if(up)add('long',50,'شکست سقف رخ داده اما حجم آن را تأیید نمی‌کند');
+  else if(down)add('short',50,'شکست کف رخ داده اما حجم آن را تأیید نمی‌کند');
+  else out.risks.push('در آخرین کندل بسته‌شده شکست معتبر سقف یا کف دیده نشد');
+ }else if(key==='momentum'){
+  if(!has('rsi')||(!has('change5m')&&!has('change15')&&!has('change1h')))return {...out,available:false,risks:['RSI یا تغییر قیمت برای سنجش مومنتوم موجود نیست']};
+  if(rsiValue>=54&&rsiValue<=72&&move>0)add('long',rsiValue>=58&&rsiValue<=67?84:76,'RSI و تغییر قیمت مومنتوم صعودی را همراهی می‌کنند');
+  else if(rsiValue>=28&&rsiValue<=46&&move<0)add('short',rsiValue>=33&&rsiValue<=42?84:76,'RSI و تغییر قیمت مومنتوم نزولی را همراهی می‌کنند');
+  else if(rsiValue>72)out.risks.push('RSI بالا است؛ احتمال ورود دیرهنگام');
+  else if(rsiValue<28)out.risks.push('RSI بسیار پایین است؛ احتمال نوسان برگشتی');
+  else out.risks.push('RSI و تغییر قیمت همگرایی جهت‌دار کافی ندارند');
+ }
+ const delta=out.long-out.short;
+ out.direction=Math.max(out.long,out.short)>=50&&Math.abs(delta)>=14?(delta>0?'LONG':'SHORT'):'WAIT';
+ return out;
+}
+function scoreLiveStrategies(x,mode=liveStrategyMode(),picks=liveStrategyPicks()){
+ const regime=detectLiveStrategyRegime(x),selected=[...new Set(mode==='adaptive'?adaptiveStrategySet(regime,x):picks)];
+ if(mode==='multi'&&selected.length<2)return {status:'insufficient',selected,scores:{},long:0,short:0,score:0,direction:'WAIT',regime,mode,agreement:0,votes:0,available:0,reasons:[],risks:['برای حالت MULTI حداقل دو استراتژی انتخاب کن.']};
+ if(x.isAggregated)return {status:'unsupported',selected,scores:{},long:0,short:0,score:0,direction:'WAIT',regime,mode,agreement:0,votes:0,available:0,reasons:[],risks:['داده تجمیعی OHLC و حجم کندلی لازم را ندارد؛ موتور جهت را تأیید نمی‌کند.']};
+ const evaluated=selected.map(k=>scoreOneLiveStrategy(k,x)),available=evaluated.filter(v=>v.available),unavailable=evaluated.filter(v=>!v.available),scores=Object.fromEntries(evaluated.map(v=>[v.key,{long:v.long,short:v.short,direction:v.direction,available:v.available}]));
+ if(available.length<2)return {status:'insufficient',selected,scores,long:0,short:0,score:0,direction:'WAIT',regime,mode,agreement:0,votes:0,available:available.length,reasons:[],risks:[...unavailable.map(v=>v.key+': '+(v.risks[0]||'داده ناکافی')),'کمتر از دو استراتژی داده کافی دارند؛ جهت LONG/SHORT صادر نشد.']};
+ const long=Math.round(available.reduce((a,v)=>a+v.long,0)/available.length),short=Math.round(available.reduce((a,v)=>a+v.short,0)/available.length),diff=long-short,votes=available.filter(v=>v.direction!=='WAIT'),longVotes=votes.filter(v=>v.direction==='LONG').length,shortVotes=votes.filter(v=>v.direction==='SHORT').length,winner=diff>=0?'LONG':'SHORT',winnerVotes=winner==='LONG'?longVotes:shortVotes,agreement=votes.length?winnerVotes/votes.length:0,conflicts=Math.min(longVotes,shortVotes);
+ const direction=Math.max(long,short)>=58&&Math.abs(diff)>=14&&votes.length>=2&&winnerVotes>=2&&agreement>=.67?winner:'WAIT',score=Math.max(0,Math.min(100,Math.round(Math.max(long,short)-conflicts*7)));
+ const reasons=available.flatMap(v=>v.reasons.map(t=>LIVE_STRATEGY_NAMES[v.key]+': '+t)),risks=[...unavailable.map(v=>LIVE_STRATEGY_NAMES[v.key]+': '+(v.risks[0]||'داده ناکافی')),...available.flatMap(v=>v.risks)];
+ if(votes.length&&agreement<.75)risks.push('بین استراتژی‌های جهت‌دار اختلاف وجود دارد؛ نتیجه محافظه‌کارانه است');
+ if(direction==='WAIT')risks.push('توافق، اختلاف امتیاز یا تعداد رأی موافق برای تأیید کافی نیست');
+ return {status:'ready',selected,scores,long,short,score,direction,regime,mode,agreement,votes:votes.length,available:available.length,reasons,risks};
+}
+function applyLiveStrategyToMarketRow(x,base=null){
+ if(base)x._liveStrategyBase=base;
+ const original=x._liveStrategyBase||{score:x.score,label:x.label,risk:x.risk,reasons:(x.reasons||[]).slice(),risks:(x.risks||[]).slice()};
+ if(!liveStrategyEnabled()){x.score=original.score;x.label=original.label;x.risk=original.risk;x.reasons=original.reasons.slice();x.risks=original.risks.slice();delete x.strategyEngine;return x}
+ const result=scoreLiveStrategies(x),labels=result.selected.map(k=>LIVE_STRATEGY_NAMES[k]||k);
+ x.baseScore=original.score;x.strategyEngine={...result,selectedLabels:labels};
+ if(result.status==='ready'){x.score=result.score;x.label=result.direction==='LONG'?'همگرایی صعودی':result.direction==='SHORT'?'همگرایی نزولی':'توافق ناکافی';x.risk=result.direction==='WAIT'||result.agreement<.67?'بالا':original.risk;x.reasons=[...original.reasons,...result.reasons];x.risks=[...original.risks,...result.risks]}
+ else{x.score=original.score;x.label=original.label;x.risk=original.risk;x.reasons=original.reasons.slice();x.risks=[...original.risks,...result.risks]}
+ return x;
+}
+function refreshLiveStrategyViews(){
+ (scannerState.rows||[]).forEach(row=>applyLiveStrategyToMarketRow(row));
+ renderMarket();
+ scannerState.majorRows=(scannerState.majorRows||[]).map(row=>{
+  if(row.candles1m&&row.candles15)row.signal=buildMajorSignal(row,row.candles1m,row.candles15,aggregateKlines(row.candles15,4));
+  else if(liveStrategyEnabled()&&row.signal?.dataQuality==='aggregated'){row.signal.liveStrategy={status:'unsupported',mode:liveStrategyMode(),selected:[],direction:'WAIT',score:0,risks:['منبع تجمیعی برای استراتژی‌های کندلی داده کافی ندارد.']};row.signal.direction='WAIT';row.signal.plan=null}
+  return row;
+ });
+ renderSignalCenter();
+}
 function scoreMarket(x){let score=0,reasons=[],risks=[];let vr=x.volRatio||0;
  if(vr>=3){score+=20;reasons.push(`حجم کندل ۵ دقیقه‌ای ${nfmt(vr,1)} برابر میانگین است`)}else if(vr>=2){score+=16;reasons.push(`جهش حجم قابل توجه: ${nfmt(vr,1)} برابر`)}else if(vr>=1.5){score+=11;reasons.push(`حجم بالاتر از میانگین: ${nfmt(vr,1)} برابر`)}else if(vr>=1.15){score+=6;reasons.push('افزایش ملایم حجم')}else risks.push('جهش حجم تأیید نشده');
  let ch=x.change24||0;score+=Math.max(0,Math.min(12,ch*0.65));if(ch>3)reasons.push(`بازده ۲۴ساعته مثبت ${pct(ch)}`);if(ch< -8)risks.push('فشار فروش قابل توجه در ۲۴ ساعت');
@@ -436,8 +518,15 @@ function scoreMarket(x){let score=0,reasons=[],risks=[];let vr=x.volRatio||0;
  if(x.change24>30){score-=8;risks.push('رشد ۲۴ساعته بسیار زیاد؛ ریسک ورود دیرهنگام')}
  if(x.fundingRate!=null&&x.fundingRate>0.0008){score-=5;risks.push('Funding مثبت و بالا؛ احتمال ازدحام پوزیشن‌های Long')}else if(x.fundingRate!=null&&x.fundingRate< -0.0008){score-=2;risks.push('Funding منفی شدید؛ بازار ممکن است در سمت Short شلوغ باشد')}
  x.score=Math.max(0,Math.min(100,Math.round(score)));x.reasons=reasons;x.risks=risks;
- x.label=x.score>=75?'مومنتوم قوی':x.score>=65?'کاندید حرکت شارپ':x.score>=48?'زیرنظر':'ضعیف';x.risk=x.rsi>=78||x.change5m>5||x.change24>30?'بالا':risks.length>=3?'متوسط':'کنترل‌شده';return applyLiveStrategyToMarketRow(x)}
-function klineStats(ks){if(!Array.isArray(ks)||ks.length<25)throw new Error('داده کندل کافی نیست');let closed=ks.slice(0,-1),last=closed[closed.length-1],prev=closed[closed.length-2],closes=closed.map(k=>+k[4]),vols=closed.slice(-21,-1).map(k=>+k[7]),avg=vols.reduce((a,b)=>a+b,0)/Math.max(1,vols.length),highs=closed.slice(-21,-1).map(k=>+k[2]),lastClose=+last[4],first1h=closed[Math.max(0,closed.length-13)];return{close:lastClose,change5m:(lastClose/(+last[1])-1)*100,change1h:(lastClose/(+first1h[1])-1)*100,volRatio:avg?+last[7]/avg:0,buyRatio:last[10]!==undefined&&last[10]!==null&&Number.isFinite(+last[10])?+last[10]/(+last[7]||1):null,rsi:rsi(closes),emaFast:ema(closes.slice(-35),9),emaSlow:ema(closes.slice(-35),21),breakout:lastClose>Math.max(...highs),lastHigh:+last[2],lastLow:+last[3],candleTime:last[6]}}
+ x.label=x.score>=75?'مومنتوم قوی':x.score>=65?'کاندید حرکت شارپ':x.score>=48?'زیرنظر':'ضعیف';x.risk=x.rsi>=78||x.change5m>5||x.change24>30?'بالا':risks.length>=3?'متوسط':'کنترل‌شده';return applyLiveStrategyToMarketRow(x,{score:x.score,label:x.label,risk:x.risk,reasons:reasons.slice(),risks:risks.slice()})}
+function klineStats(ks){
+ if(!Array.isArray(ks)||ks.length<25)throw new Error('داده کندل کافی نیست');
+ const closed=ks.slice(0,-1),last=closed[closed.length-1],closes=closed.map(k=>+k[4]),vols=closed.slice(-21,-1).map(k=>+k[7]),avg=vols.reduce((a,b)=>a+b,0)/Math.max(1,vols.length),prior=closed.slice(-21,-1),recent=closed.slice(-13,-1),lastClose=+last[4],lastOpen=+last[1],lastHigh=+last[2],lastLow=+last[3],first1h=closed[Math.max(0,closed.length-13)],fast=ema(closes.slice(-35),9),slow=ema(closes.slice(-35),21),priorHigh=Math.max(...prior.map(k=>+k[2])),priorLow=Math.min(...prior.map(k=>+k[3])),rangeHigh=Math.max(...recent.map(k=>+k[2])),rangeLow=Math.min(...recent.map(k=>+k[3]));
+ const alpha=2/22;let ema21=null,crosses=0,previousSide=null;
+ for(let i=0;i<closes.length;i++){if(i===20)ema21=closes.slice(0,21).reduce((a,b)=>a+b,0)/21;else if(i>20)ema21=closes[i]*alpha+ema21*(1-alpha);if(i>=20){const side=closes[i]>=ema21?1:-1;if(previousSide!==null&&side!==previousSide)crosses++;previousSide=side}}
+ const trendStrengthPct=lastClose&&fast!=null&&slow!=null?Math.abs(fast-slow)/lastClose*100:0,rangePct=lastClose?(rangeHigh-rangeLow)/lastClose*100:0,body=Math.abs(lastClose-lastOpen),wickUp=Math.max(0,lastHigh-Math.max(lastOpen,lastClose)),wickDown=Math.max(0,Math.min(lastOpen,lastClose)-lastLow);
+ return {close:lastClose,change5m:(lastClose/lastOpen-1)*100,change1h:(lastClose/(+first1h[1])-1)*100,volRatio:avg?+last[7]/avg:0,buyRatio:last[10]!==undefined&&last[10]!==null&&Number.isFinite(+last[10])&&+last[7]>0?+last[10]/+last[7]:null,rsi:rsi(closes),emaFast:fast,emaSlow:slow,breakout:lastClose>priorHigh,breakoutDown:lastClose<priorLow,lastOpen,lastClose,lastHigh,lastLow,body,wickUp,wickDown,sweepLow:lastLow<Math.min(...recent.map(k=>+k[3]))&&lastClose>rangeLow,sweepHigh:lastHigh>Math.max(...recent.map(k=>+k[2]))&&lastClose<rangeHigh,emaCrosses:crosses,rangePct,trendStrengthPct,candleTime:last[6]};
+}
 function gateCandlesToKlines(arr){return arr.map(c=>[+c.t*1000,c.o,c.h,c.l,c.c,c.v||'0',+c.t*1000,c.sum||'0',0,0,0,0]).sort((a,b)=>a[0]-b[0])}
 const providerNames={bybit:'Bybit USDT Perpetual',kucoin:'KuCoin USDT Futures',gate:'Gate.io USDT Futures',futures:'Binance USDⓈ-M Futures',spot:'Binance Spot',coinpaprika:'CoinPaprika · داده تجمیعی بازار'};
 const fallbackOrder=['bybit','kucoin','gate','futures','coinpaprika'];
@@ -519,7 +608,7 @@ function scoreAggregatedMarket(x){
  if(x.quoteVolume>=100e6)score+=10;else if(x.quoteVolume>=30e6)score+=7;else if(x.quoteVolume>=5e6)score+=4;
  if(x.change24>25){score-=10;risks.push('رشد ۲۴ ساعته بسیار زیاد؛ ریسک تعقیب قیمت')}else if(x.change24>8){score-=3;risks.push('رشد روزانه بالا؛ نیازمند تأیید در تایم‌فریم کوتاه‌تر')}
  if(x.change24< -12){score-=8;risks.push('افت شدید ۲۴ ساعته')}
- x.score=Math.max(0,Math.min(100,Math.round(score)));x.reasons=reasons;x.risks=risks;x.label=x.score>=75?'مومنتوم قوی':x.score>=65?'کاندید حرکت شارپ':x.score>=48?'زیرنظر':'ضعیف';x.risk=risks.length>=2||x.change15m>3||x.change24>25?'بالا':risks.length?'متوسط':'کنترل‌شده';x.isAggregated=true;return x;
+ x.score=Math.max(0,Math.min(100,Math.round(score)));x.reasons=reasons;x.risks=risks;x.label=x.score>=75?'مومنتوم قوی':x.score>=65?'کاندید حرکت شارپ':x.score>=48?'زیرنظر':'ضعیف';x.risk=risks.length>=2||x.change15m>3||x.change24>25?'بالا':risks.length?'متوسط':'کنترل‌شده';x.isAggregated=true;return applyLiveStrategyToMarketRow(x,{score:x.score,label:x.label,risk:x.risk,reasons:reasons.slice(),risks:risks.slice()});
 }
 async function runProviderScan(provider,minVol,limit,status,progress){
  status.textContent=`اتصال به ${providerNames[provider]}…`;let base=provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com';
@@ -536,7 +625,7 @@ async function runProviderScan(provider,minVol,limit,status,progress){
  let analyzed=await pool(ranked,4,async t=>{
   let [k5,k1]=await fetchProviderCandles(provider,t,base),st=klineStats(k5),h1=klineStats(k1);
   let prevHour=k1.slice().sort((a,b)=>a[0]-b[0]);let prior=prevHour[prevHour.length-2];
-  let x={symbol:t.symbol,contract:t.contract||t.symbol,price:t.lastPrice,change24:t.priceChangePercent,quoteVolume:t.quoteVolume,high24:t.highPrice,low24:t.lowPrice,...st,change1h:prior?((h1.close/(+prior[1])-1)*100):h1.change1h,emaTrend:h1.emaFast>h1.emaSlow,buyRatio:st.buyRatio,fundingRate:t.fundingRate,source:providerNames[provider],provider};
+  let x={symbol:t.symbol,contract:t.contract||t.symbol,provider,strategyCandles5m:k5,price:t.lastPrice,change24:t.priceChangePercent,quoteVolume:t.quoteVolume,high24:t.highPrice,low24:t.lowPrice,...st,change1h:prior?((h1.close/(+prior[1])-1)*100):h1.change1h,emaTrend:h1.emaFast>h1.emaSlow,buyRatio:st.buyRatio,fundingRate:t.fundingRate,source:providerNames[provider],provider};
   scoreMarket(x);done++;progress.style.width=`${12+done/ranked.length*68}%`;status.textContent=`تحلیل کندل‌ها ${done}/${ranked.length} · ${providerNames[provider]}`;return x;
  });
  let rows=analyzed.filter(x=>!x.error);if(!rows.length)throw new Error('کندل‌های نمادهای منتخب قابل دریافت نبودند');
@@ -583,7 +672,7 @@ function renderMarket(){
  let rows=scannerState.rows.filter(x=>filter==='all'||(filter==='hot'&&x.score>=65)||(filter==='volume'&&x.volRatio>=1.5)||(filter==='breakout'&&x.breakout)||(filter==='risk'&&x.risk==='بالا'));
  document.getElementById('marketCount').textContent=rows.length+' نماد';
  let shown=scannerState.marketShowAll?rows:rows.slice(0,10);
- document.getElementById('marketRows').innerHTML=shown.length?shown.map(x=>'<tr><td><button class="coin-link" data-symbol="'+x.symbol+'" title="نمایش نمودار و کندل‌ها">'+x.symbol.replace(/_?USDT$/,'')+'<small style="color:var(--muted)">/USDT</small></button></td><td>'+nfmt(x.price,x.price<1?6:3)+'</td><td class="'+(x.change24>=0?'green':'red')+'">'+pct(x.change24)+'</td><td>'+nfmt(x.quoteVolume/1e6,1)+'M</td><td class="'+(x.volRatio>=1.5?'green':'')+'">'+(x.volRatio==null?'—':nfmt(x.volRatio,2)+'x')+'</td><td>'+nfmt(x.rsi,1)+'</td><td><span class="signal-score '+(x.score>=65?'':x.score>=48?'mid':'low')+'">'+x.score+'</span></td><td>'+x.label+(x.risk==='بالا'?' · <span class="risk-high">ریسک بالا</span>':'')+'</td></tr>').join(''):'<tr><td colspan="8" class="empty">نمادی با این فیلتر پیدا نشد.</td></tr>';
+ document.getElementById('marketRows').innerHTML=shown.length?shown.map(x=>'<tr><td><button class="coin-link" data-symbol="'+x.symbol+'" title="نمایش نمودار و کندل‌ها">'+x.symbol.replace(/_?USDT$/,'')+'<small style="color:var(--muted)">/USDT</small></button></td><td>'+nfmt(x.price,x.price<1?6:3)+'</td><td class="'+(x.change24>=0?'green':'red')+'">'+pct(x.change24)+'</td><td>'+nfmt(x.quoteVolume/1e6,1)+'M</td><td class="'+(x.volRatio>=1.5?'green':'')+'">'+(x.volRatio==null?'—':nfmt(x.volRatio,2)+'x')+'</td><td>'+nfmt(x.rsi,1)+'</td><td><span class="signal-score '+(x.score>=65?'':x.score>=48?'mid':'low')+'">'+x.score+'</span></td><td>'+(x.strategyEngine?(x.strategyEngine.status==='ready'?x.strategyEngine.regime+' · '+x.strategyEngine.selected.map(k=>LIVE_STRATEGY_NAMES[k]).join(' + '):'داده ناکافی'):'پایه')+'</td><td>'+x.label+(x.risk==='بالا'?' · <span class="risk-high">ریسک بالا</span>':'')+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">نمادی با این فیلتر پیدا نشد.</td></tr>';
  let more=document.getElementById('marketMore');
  more.innerHTML=rows.length>10?'<button class="btn" id="toggleMarketRows">'+(scannerState.marketShowAll?'نمایش کمتر':'See More · نمایش '+rows.length+' ارز')+'</button>':'';
  document.getElementById('toggleMarketRows')?.addEventListener('click',()=>{scannerState.marketShowAll=!scannerState.marketShowAll;renderMarket()});
@@ -591,7 +680,7 @@ function renderMarket(){
  if(scannerState.selected)showMarketDetail(scannerState.selected)
 }
 function selectMarket(sym){scannerState.selected=scannerState.rows.find(x=>x.symbol===sym);showMarketDetail(scannerState.selected)}
-function showMarketDetail(x){if(!x)return;document.getElementById('detailTitle').textContent=x.symbol.replace('_','/').replace('USDT','/USDT').replace('//','/');document.getElementById('detailSubtitle').textContent=`${x.label} · ${x.risk==='بالا'?'ریسک بالا':x.risk} · ${x.source}`;let score=document.getElementById('detailScore');score.textContent=`${x.score}/100`;score.className='signal-score '+(x.score>=65?'':x.score>=48?'mid':'low');document.getElementById('detailMetrics').innerHTML=[['قیمت',nfmt(x.price,x.price<1?7:4)],['تغییر ۲۴h',pct(x.change24)],['تغییر ۱۵m',x.change15m==null?'ناموجود':pct(x.change15m)],['تغییر ۳۰m',x.change30m==null?'ناموجود':pct(x.change30m)],['تغییر ۱h',pct(x.change1h)],['تغییر ۶h',x.change6h==null?'ناموجود':pct(x.change6h)],['تغییر ۵m',x.change5m==null?'در این منبع موجود نیست':pct(x.change5m)],['حجم ۲۴h',nfmt(x.quoteVolume/1e6,2)+'M '+(x.isAggregated?'USD':'USDT')],['تغییر حجم ۲۴h',x.volumeChange24h==null?'ناموجود':pct(x.volumeChange24h)],['جهش حجم ۵m',x.volRatio==null?'در این منبع موجود نیست':nfmt(x.volRatio,2)+'x'],['RSI 14',nfmt(x.rsi,1)],['فشار خرید',x.buyRatio==null?'ناموجود':nfmt(x.buyRatio*100,1)+'%'],['EMA 9 / 21',x.emaFast==null||x.emaSlow==null?'در این منبع موجود نیست':(x.emaFast>x.emaSlow?'صعودی':'نزولی')],['Open Interest',x.oiChange==null?'داده موجود نیست':pct(x.oiChange)],['Funding Rate',x.fundingRate==null?'داده موجود نیست':(x.fundingRate*100).toFixed(4)+'%']] .map(([a,b])=>`<div class="metric"><small>${a}</small><b>${b}</b></div>`).join('');let reasons=[...(x.isAggregated?[`دادهٔ تجمیعی بازار از CoinPaprika؛ حجم‌ها برآورد تجمیعی USD هستند، نه حجم یک صرافی.`,'این منبع دادهٔ فیوچرز، Funding، Open Interest و کندل ۵ دقیقه‌ای ارائه نمی‌کند.']:[]),...x.reasons.map(r=>`<div class="signal-item"><span class="risk-low">✓ ${r}</span></div>`),...x.risks.map(r=>`<div class="signal-item"><span class="risk-high">! ${r}</span></div>`)];document.getElementById('detailReasons').innerHTML=reasons.length?reasons.join(''):'<div class="market-note">هنوز دلیل قوی یا هشدار مشخصی ثبت نشده است.</div>'}
+function showMarketDetail(x){if(!x)return;document.getElementById('detailTitle').textContent=x.symbol.replace('_','/').replace('USDT','/USDT').replace('//','/');document.getElementById('detailSubtitle').textContent=`${x.label} · ${x.risk==='بالا'?'ریسک بالا':x.risk} · ${x.source}`;let score=document.getElementById('detailScore');score.textContent=`${x.score}/100`;score.className='signal-score '+(x.score>=65?'':x.score>=48?'mid':'low');document.getElementById('detailMetrics').innerHTML=[['قیمت',nfmt(x.price,x.price<1?7:4)],['تغییر ۲۴h',pct(x.change24)],['تغییر ۱۵m',x.change15m==null?'ناموجود':pct(x.change15m)],['تغییر ۳۰m',x.change30m==null?'ناموجود':pct(x.change30m)],['تغییر ۱h',pct(x.change1h)],['تغییر ۶h',x.change6h==null?'ناموجود':pct(x.change6h)],['تغییر ۵m',x.change5m==null?'در این منبع موجود نیست':pct(x.change5m)],['حجم ۲۴h',nfmt(x.quoteVolume/1e6,2)+'M '+(x.isAggregated?'USD':'USDT')],['تغییر حجم ۲۴h',x.volumeChange24h==null?'ناموجود':pct(x.volumeChange24h)],['جهش حجم ۵m',x.volRatio==null?'در این منبع موجود نیست':nfmt(x.volRatio,2)+'x'],['RSI 14',nfmt(x.rsi,1)],['فشار خرید',x.buyRatio==null?'ناموجود':nfmt(x.buyRatio*100,1)+'%'],['EMA 9 / 21',x.emaFast==null||x.emaSlow==null?'در این منبع موجود نیست':(x.emaFast>x.emaSlow?'صعودی':'نزولی')],['Open Interest',x.oiChange==null?'داده موجود نیست':pct(x.oiChange)],['Funding Rate',x.fundingRate==null?'داده موجود نیست':(x.fundingRate*100).toFixed(4)+'%']] .map(([a,b])=>`<div class="metric"><small>${a}</small><b>${b}</b></div>`).join('');let reasons=[...(x.isAggregated?[`دادهٔ تجمیعی بازار از CoinPaprika؛ حجم‌ها برآورد تجمیعی USD هستند، نه حجم یک صرافی.`,'این منبع دادهٔ فیوچرز، Funding، Open Interest و کندل ۵ دقیقه‌ای ارائه نمی‌کند.']:[]),...x.reasons.map(r=>`<div class="signal-item"><span class="risk-low">✓ ${r}</span></div>`),...x.risks.map(r=>`<div class="signal-item"><span class="risk-high">! ${r}</span></div>`)];if(x.strategyEngine){const e=x.strategyEngine;reasons.unshift('<div class="signal-item"><div><b>Live Strategy Engine · '+e.mode.toUpperCase()+'</b><small>رژیم: '+e.regime+' · استراتژی‌ها: '+(e.selected||[]).map(k=>LIVE_STRATEGY_NAMES[k]).join('، ')+'</small><small>LONG '+e.long+' · SHORT '+e.short+' · توافق '+(e.votes?Math.round(e.agreement*100)+'%':'ناموجود')+' · امتیاز پایه '+(x.baseScore??'—')+'</small></div><span class="signal-score '+(e.direction==='LONG'?'':e.direction==='SHORT'?'mid':'low')+'">'+(e.direction||'WAIT')+'</span></div>',...(e.risks||[]).map(v=>'<div class="signal-item"><span class="risk-high">! '+v+'</span></div>'))}document.getElementById('detailReasons').innerHTML=reasons.length?reasons.join(''):'<div class="market-note">هنوز دلیل قوی یا هشدار مشخصی ثبت نشده است.</div>'}
 
 let activeChartSymbol=null,activeChartInterval='15m',activeChartRow=null;
 const chartIntervals={'1m':{bybit:'1',kucoin:1,gate:'1m',binance:'1m',limit:160},'5m':{bybit:'5',kucoin:5,gate:'5m',binance:'5m',limit:160},'15m':{bybit:'15',kucoin:15,gate:'15m',binance:'15m',limit:160},'1h':{bybit:'60',kucoin:60,gate:'1h',binance:'1h',limit:160},'4h':{bybit:'240',kucoin:240,gate:'4h',binance:'4h',limit:160},'1d':{bybit:'D',kucoin:1440,gate:'1d',binance:'1d',limit:160}};
@@ -713,9 +802,15 @@ function buildMajorSignal(row,ks1m,ks15,ks1h){
  if(rvEnabled&&rv.choppy){long=Math.max(0,long-10);short=Math.max(0,short-10);risks.push('Range Intelligence: بازار پرنویز است؛ امتیاز هر دو جهت ۱۰ واحد کاهش یافت')}
  if(rvEnabled&&rv.highVolRange)risks.push('Range Intelligence: رنج پرنوسان؛ هدف دوم فقط با تأیید مومنتوم معتبر دنبال شود');
  if(rvEnabled&&rv.expansion)reasons.push('Range Intelligence: شکست همراه افزایش حجم و مومنتوم تأیید شده است');
- let liveStrategy=null;if(liveStrategyEnabled()){liveStrategy=scoreLiveStrategies({emaFast:s1.emaFast,emaSlow:s1.emaSlow,change5m:change1m,change15,change1h,rsi:s15.rsi,volRatio:s15.volRatio,buyRatio,candles15:ks15,breakout:breakoutUp||breakoutDown,breakoutUp,breakoutDown,rangeVolatility:rv});if(liveStrategy.selected.length){long=Math.round(long*.45+liveStrategy.long*.55);short=Math.round(short*.45+liveStrategy.short*.55);reasons.push('Live Strategy Engine: '+(liveStrategy.mode==='adaptive'?'انتخاب تطبیقی':'ترکیب چند استراتژی')+' · '+liveStrategy.selected.map(k=>LIVE_STRATEGY_NAMES[k]).join(' + '));if(Math.abs(liveStrategy.long-liveStrategy.short)<12)risks.push('استراتژی‌های انتخاب‌شده همگرایی جهت‌دار کافی ندارند')}else risks.push('هیچ استراتژی فعالی انتخاب نشده است؛ نتیجه WAIT')}
- const direction=long>=66&&long-short>=12?'LONG':short>=66&&short-long>=12?'SHORT':'WAIT';
- const score=Math.max(long,short),price=+row.lastPrice,atr=calcATR(ks15)||price*0.004;
+ let liveStrategy=null;
+ if(liveStrategyEnabled()){
+  liveStrategy=scoreLiveStrategies({provider:row.provider||scannerState.provider,emaFast:s1.emaFast,emaSlow:s1.emaSlow,change5m:change15,change1h,rsi:s15.rsi,volRatio:s15.volRatio,buyRatio,candles15:ks15,breakout:breakoutUp,breakoutUp,breakoutDown,rangeVolatility:rv,trendStrengthPct:s1.trendStrengthPct,rangePct:s15.rangePct,emaCrosses:s15.emaCrosses});
+  if(liveStrategy.status==='ready'){long=liveStrategy.long;short=liveStrategy.short;reasons.push(...liveStrategy.reasons);risks.push(...liveStrategy.risks)}
+  else{long=0;short=0;risks.push(...liveStrategy.risks)}
+ }
+ const baseDirection=long>=66&&long-short>=12?'LONG':short>=66&&short-long>=12?'SHORT':'WAIT';
+ const direction=liveStrategy?liveStrategy.direction:baseDirection;
+ const score=liveStrategy?liveStrategy.score:Math.max(long,short),price=+row.lastPrice,atr=calcATR(ks15)||price*0.004;
  const riskDistance=Math.max(atr*1.45,price*0.0022);
  let tp1R=1.5,tp2R=2.25;
  if(rvEnabled&&rv.highVolRange){tp1R=1.25;tp2R=1.65}
@@ -756,7 +851,7 @@ function addSignalEvent(event){signalState.events.unshift(event);signalState.eve
 function notifyBrowser(event){try{if(!('Notification'in window)||Notification.permission!=='granted')return;const n=new Notification(event.title,{body:event.body,tag:`ccd-${event.symbol}-${event.type}`,silent:false});n.onclick=()=>{window.focus();document.getElementById('signalCenter').scrollIntoView({behavior:'smooth'})}}catch(e){console.warn('Browser notification failed',e)}}
 function renderSignalEvents(){const el=document.getElementById('signalEventFeed');if(!signalState.events.length){el.innerHTML='<div class="signal-empty">هنوز سیگنال تازه یا هشدار تضعیفی ثبت نشده است.</div>';return}el.innerHTML=signalState.events.slice(0,30).map(e=>`<div class="signal-event"><div><b>${e.title}</b><small>${e.body}</small><small>${new Date(e.time).toLocaleString('fa-IR')}</small></div><span class="band-chip ${e.type==='WEAKENING'?'resistance':'support'}">${e.type==='WEAKENING'?'تضعیف':'سیگنال'}</span></div>`).join('')}
 function sendOneSignal(symbol){const r=(scannerState.majorRows||[]).find(x=>x.baseSymbol===symbol);if(!r||!r.signal||!['LONG','SHORT'].includes(r.signal.direction)||!r.signal.plan){toast('برای این ارز سیگنال تأییدشده‌ای وجود ندارد');return}const s=r.signal,now=Date.now();const body=`${symbol}/USDT ${s.direction==='LONG'?'خرید / LONG':'فروش / SHORT'} · امتیاز ${s.score}/100 · مرجع ${priceText(symbol,s.plan.entry,r.band?.step)} · حدضرر ${priceText(symbol,s.plan.stop,r.band?.step)} · هدف ۱ ${priceText(symbol,s.plan.target1,r.band?.step)} · هدف ۲ ${priceText(symbol,s.plan.target2,r.band?.step)}`;if('Notification'in window&&Notification.permission==='granted'){notifyBrowser({title:`سیگنال ${symbol}/USDT`,body,symbol,type:'MANUAL',time:now});archiveSignal(r,now,'MANUAL');toast('اعلان مرورگر ارسال و در آرشیو ثبت شد')}else{toast('ابتدا اعلان مرورگر را فعال کن')}}
-function renderSignalCards(){const el=document.getElementById('signalCards'),rows=(scannerState.majorRows||[]).slice();if(!rows.length){el.innerHTML='<div class="signal-empty">اطلاعات ارزهای اصلی هنوز دریافت نشده است.</div>';return}rows.sort((a,b)=>((b.signal?.direction==='LONG'||b.signal?.direction==='SHORT')?1:0)-((a.signal?.direction==='LONG'||a.signal?.direction==='SHORT')?1:0)||(b.signal?.score||0)-(a.signal?.score||0));el.innerHTML=rows.map(r=>{const s=r.signal||{},dir=s.direction||'WAIT',cls=dir==='LONG'?'long':dir==='SHORT'?'short':'wait',label=dir==='LONG'?'خرید / LONG':dir==='SHORT'?'فروش / SHORT':s.dataQuality==='aggregated'?'فقط رصد':'انتظار';const plan=s.plan;return `<div class="signal-card ${cls}"><div class="signal-top"><div><b>${r.baseSymbol}/USDT</b><div class="sub">${r.source} · قیمت ${priceText(r.baseSymbol,r.lastPrice,r.band?.step)}</div></div><span class="signal-dir ${cls}">${label}</span></div><div class="rowline"><span class="sub">امتیاز جهت غالب</span><b>${s.score||0}/100</b></div>${s.liveStrategy?'<div class="market-note">موتور استراتژی: '+(s.liveStrategy.mode==='adaptive'?'تطبیقی':'چنداستراتژی')+' · '+s.liveStrategy.selected.map(k=>LIVE_STRATEGY_NAMES[k]).join(' + ')+'</div>':''}${plan?`<div class="signal-values"><div><small>ورود مرجع</small><b>${priceText(r.baseSymbol,plan.entry,r.band?.step)}</b></div><div><small>حدضرر</small><b class="red">${priceText(r.baseSymbol,plan.stop,r.band?.step)}</b></div><div><small>هدف اول</small><b class="green">${priceText(r.baseSymbol,plan.target1,r.band?.step)}</b></div><div><small>هدف دوم</small><b class="green">${priceText(r.baseSymbol,plan.target2,r.band?.step)}</b></div></div>`:`<div class="market-note">${s.reason||'شرایط لازم برای سیگنال ورود کامل نیست.'}</div>`}<div class="market-note">${(s.reasons||[]).slice(0,2).join(' · ')||'نیازمند تأیید بیشتر'} ${(s.risks||[]).length?' · ریسک: '+s.risks.slice(0,1).join(''):''}</div><div class="rowline" style="margin-top:8px"><span class="sub">تغییر ۱۵m ${s.change15==null?'—':pct(s.change15)} · ۱h ${s.change1h==null?'—':pct(s.change1h)}</span>${plan?`<button class="btn" data-notify-symbol="${r.baseSymbol}">ارسال اعلان</button>`:''}</div></div>`}).join('');el.querySelectorAll('[data-notify-symbol]').forEach(b=>b.onclick=()=>sendOneSignal(b.dataset.notifySymbol));}
+function renderSignalCards(){const el=document.getElementById('signalCards'),rows=(scannerState.majorRows||[]).slice();if(!rows.length){el.innerHTML='<div class="signal-empty">اطلاعات ارزهای اصلی هنوز دریافت نشده است.</div>';return}rows.sort((a,b)=>((b.signal?.direction==='LONG'||b.signal?.direction==='SHORT')?1:0)-((a.signal?.direction==='LONG'||a.signal?.direction==='SHORT')?1:0)||(b.signal?.score||0)-(a.signal?.score||0));el.innerHTML=rows.map(r=>{const s=r.signal||{},dir=s.direction||'WAIT',cls=dir==='LONG'?'long':dir==='SHORT'?'short':'wait',label=dir==='LONG'?'خرید / LONG':dir==='SHORT'?'فروش / SHORT':s.dataQuality==='aggregated'?'فقط رصد':'انتظار';const plan=s.plan;return `<div class="signal-card ${cls}"><div class="signal-top"><div><b>${r.baseSymbol}/USDT</b><div class="sub">${r.source} · قیمت ${priceText(r.baseSymbol,r.lastPrice,r.band?.step)}</div></div><span class="signal-dir ${cls}">${label}</span></div><div class="rowline"><span class="sub">امتیاز جهت غالب</span><b>${s.score||0}/100</b></div>${s.liveStrategy?'<div class="market-note">موتور '+(s.liveStrategy.mode==='adaptive'?'ADAPTIVE':'MULTI')+' · '+(s.liveStrategy.status==='unsupported'?'داده ناکافی':s.liveStrategy.regime)+' · '+(s.liveStrategy.selected||[]).map(k=>LIVE_STRATEGY_NAMES[k]).join(' + ')+' · '+(s.liveStrategy.direction||'WAIT')+' · LONG '+(s.liveStrategy.long??0)+' / SHORT '+(s.liveStrategy.short??0)+' · توافق '+(s.liveStrategy.votes?Math.round(s.liveStrategy.agreement*100)+'%':'—')+'</div>':''}${plan?`<div class="signal-values"><div><small>ورود مرجع</small><b>${priceText(r.baseSymbol,plan.entry,r.band?.step)}</b></div><div><small>حدضرر</small><b class="red">${priceText(r.baseSymbol,plan.stop,r.band?.step)}</b></div><div><small>هدف اول</small><b class="green">${priceText(r.baseSymbol,plan.target1,r.band?.step)}</b></div><div><small>هدف دوم</small><b class="green">${priceText(r.baseSymbol,plan.target2,r.band?.step)}</b></div></div>`:`<div class="market-note">${s.reason||'شرایط لازم برای سیگنال ورود کامل نیست.'}</div>`}<div class="market-note">${(s.reasons||[]).slice(0,2).join(' · ')||'نیازمند تأیید بیشتر'} ${(s.risks||[]).length?' · ریسک: '+s.risks.slice(0,1).join(''):''}</div><div class="rowline" style="margin-top:8px"><span class="sub">تغییر ۱۵m ${s.change15==null?'—':pct(s.change15)} · ۱h ${s.change1h==null?'—':pct(s.change1h)}</span>${plan?`<button class="btn" data-notify-symbol="${r.baseSymbol}">ارسال اعلان</button>`:''}</div></div>`}).join('');el.querySelectorAll('[data-notify-symbol]').forEach(b=>b.onclick=()=>sendOneSignal(b.dataset.notifySymbol));}
 function archiveSignal(row,time=Date.now(),origin='AUTO'){
  const s=row.signal||{},p=s.plan;if(!p||!['LONG','SHORT'].includes(s.direction))return;
  const rec={id:`${row.baseSymbol}-${s.direction}-${time}-${Math.random().toString(36).slice(2,7)}`,symbol:row.baseSymbol,direction:s.direction,score:s.score||0,source:row.source||s.source||'—',entry:+p.entry,stop:+p.stop,target1:+p.target1,target2:+p.target2,createdAt:time,status:'PENDING',resolvedAt:null,outcomePrice:null,origin,evaluationMode:signalPerformanceEnabled()?'1m':'15m',tp1HitAt:null,tp2HitAt:null,stopHitAt:null,lastEvaluatedCandleStart:null,historyIncomplete:false};
@@ -873,10 +968,10 @@ function processSignalTransitions(){const now=Date.now();for(const r of scannerS
 function renderSignalCenter(){renderSignalCards();renderSignalEvents();const valid=(scannerState.majorRows||[]).filter(r=>['LONG','SHORT'].includes(r.signal?.direction)&&r.signal.score>=70).length;document.getElementById('signalStatus').textContent=valid?`${valid} سیگنال تأییدشده`:'فعلاً سیگنال ورود تأیید نشده';}
 async function refreshMajorAnalysis(provider=scannerState.provider){if(!provider)throw new Error('ابتدا اسکن بازار را اجرا کن');const mode=+(document.getElementById('bandStepMode')?.value||10);let raw=scannerState.universe?.length?scannerState.universe:await fetchUniverse(provider);const map=new Map(raw.map(t=>[baseSymbol(t),t]));let tracked=majorSymbols.map(s=>map.get(s)).filter(Boolean);if(!tracked.length)throw new Error('ارزهای اصلی در منبع انتخابی پیدا نشدند');
  if(provider==='coinpaprika'){
-  const samples=recordBandSamples(tracked);scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,source:t.source||providerNames[provider],candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است']}}});
+  const samples=recordBandSamples(tracked);scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,source:t.source||providerNames[provider],candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است'],liveStrategy:liveStrategyEnabled()?scoreLiveStrategies({isAggregated:true}):null}}});
  }else{
   const base=scannerState.apiBase|| (provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com');
-  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:null};row.signal=buildMajorSignal(row,candles1m,candles15,h1);const needsPerformance=signalPerformanceEnabled()&&(signalState.archive.some(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&!rec.historyIncomplete)||(['LONG','SHORT'].includes(row.signal.direction)&&!!row.signal.plan));if(needsPerformance){try{row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base)}catch(e){console.warn('Performance 1m data unavailable for '+baseSym,e)}}row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
+  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,provider,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:null};row.signal=buildMajorSignal(row,candles1m,candles15,h1);const needsPerformance=signalPerformanceEnabled()&&(signalState.archive.some(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&!rec.historyIncomplete)||(['LONG','SHORT'].includes(row.signal.direction)&&!!row.signal.plan));if(needsPerformance){try{row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base)}catch(e){console.warn('Performance 1m data unavailable for '+baseSym,e)}}row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
   scannerState.majorRows=results.filter(x=>!x.error);if(!scannerState.majorRows.length)throw new Error(results.find(x=>x.error)?.error||'کندل ارزهای اصلی دریافت نشد');
   const sampleItems=tracked.filter(t=>scannerState.majorRows.some(r=>r.baseSymbol===baseSymbol(t)));recordBandSamples(sampleItems);
  }
@@ -1147,7 +1242,17 @@ function syncRangeToggle(){const on=!!rvToggle.checked;try{localStorage.setItem(
 rvToggle.addEventListener('change',syncRangeToggle);syncRangeToggle();
 
 const liveStrategyToggle=el('liveStrategyEngineToggle'),liveStrategyModeSelect=el('liveStrategyMode'),liveStrategyOptions=el('liveStrategyOptions'),liveStrategyStatus=el('liveStrategyStatus'),liveStrategyState=el('liveStrategyState');
-function syncLiveStrategyControls(){const enabled=!!liveStrategyToggle?.checked,mode=liveStrategyModeSelect?.value||'adaptive';const pickNodes=[...document.querySelectorAll('input[name="liveStrategyPick"]')];if(enabled&&mode==='multi'&&!pickNodes.some(n=>n.checked)){const first=pickNodes[0];if(first)first.checked=true}if(liveStrategyOptions)liveStrategyOptions.style.display=enabled?'block':'none';pickNodes.forEach(n=>{n.disabled=!enabled||mode!=='multi'});if(liveStrategyStatus)liveStrategyStatus.textContent=enabled?'وضعیت: روشن · '+(mode==='adaptive'?'انتخاب هوشمند تطبیقی':'ترکیب چند استراتژی'):'وضعیت: خاموش · امتیازدهی پایه فعال است';if(liveStrategyState)liveStrategyState.textContent=mode==='adaptive'?'استراتژی‌ها بر اساس روند، رنج، شکست و مومنتوم انتخاب می‌شوند.':'حداقل یک استراتژی فعال است؛ نتیجه‌ها با امتیاز پایه ترکیب می‌شوند.';try{localStorage.setItem(LIVE_STRATEGY_ENABLED_KEY,String(enabled));localStorage.setItem(LIVE_STRATEGY_MODE_KEY,mode);localStorage.setItem(LIVE_STRATEGY_PICKS_KEY,JSON.stringify(pickNodes.filter(n=>n.checked).map(n=>n.value)))}catch(e){}}
+function syncLiveStrategyControls(){
+ const enabled=!!liveStrategyToggle?.checked,mode=liveStrategyModeSelect?.value||'adaptive';
+ const pickNodes=[...document.querySelectorAll('input[name="liveStrategyPick"]')],selected=pickNodes.filter(n=>n.checked);
+ if(liveStrategyOptions)liveStrategyOptions.style.display=enabled?'block':'none';
+ const multiChoices=document.getElementById('liveMultiStrategyChoices');if(multiChoices)multiChoices.style.display=enabled&&mode==='multi'?'grid':'none';
+ pickNodes.forEach(n=>{n.disabled=!enabled||mode!=='multi'});
+ if(liveStrategyStatus)liveStrategyStatus.textContent=!enabled?'وضعیت: OFF · امتیازدهی پایه فعال است':mode==='adaptive'?'وضعیت: ADAPTIVE · انتخاب خودکار براساس رژیم بازار':'وضعیت: MULTI · '+(selected.length>=2?selected.length+' استراتژی انتخاب شده':'حداقل دو استراتژی انتخاب کن');
+ if(liveStrategyState)liveStrategyState.textContent=mode==='adaptive'?'تشخیص رنج، روند، مومنتوم و شکست؛ انتخاب خودکار استراتژی‌های مناسب.':'نتیجه فقط با حداقل دو استراتژی قابل ارزیابی و توافق جهت‌دار تأیید می‌شود.';
+ try{localStorage.setItem(LIVE_STRATEGY_ENABLED_KEY,String(enabled));localStorage.setItem(LIVE_STRATEGY_MODE_KEY,mode);localStorage.setItem(LIVE_STRATEGY_PICKS_KEY,JSON.stringify(selected.map(n=>n.value)))}catch(e){}
+ refreshLiveStrategyViews();
+}
 if(liveStrategyToggle){liveStrategyToggle.checked=liveStrategyEnabled();if(liveStrategyModeSelect)liveStrategyModeSelect.value=liveStrategyMode();const saved=liveStrategyPicks();document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.checked=saved.includes(n.value));liveStrategyToggle.addEventListener('change',syncLiveStrategyControls);liveStrategyModeSelect?.addEventListener('change',syncLiveStrategyControls);document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.addEventListener('change',syncLiveStrategyControls));syncLiveStrategyControls()}
 const riskCapitalToggle=el('riskCapitalToggle');loadRiskSettings();if(riskCapitalToggle)riskCapitalToggle.checked=riskCapitalEnabled();
 function syncRiskCapitalToggle(){const on=!!riskCapitalToggle.checked;try{localStorage.setItem(RISK_CAPITAL_ENABLED_KEY,String(on))}catch(e){}renderRiskCapital();toast(on?'Risk & Capital Management فعال شد':'مدیریت ریسک غیرفعال شد؛ موتور پایه تغییری نکرد')}
