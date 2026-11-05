@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.26 · Glass UI</title>
+<title>CCAP v0.9.27 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -137,7 +137,7 @@ button,input,select,textarea{font:inherit}
 
 <section class="section" id="market">
  <div class="card">
-  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۲۵ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.25</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
+  <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۲۷ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.27</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
   <div class="market-toolbar">
    <label class="sub">منبع داده</label><select id="marketSource"><option value="auto" selected>خودکار · Bybit ← KuCoin ← Gate.io ← Binance ← CoinPaprika</option><option value="bybit">Bybit USDT Perpetual</option><option value="kucoin">KuCoin USDT Futures</option><option value="gate">Gate.io USDT Futures</option><option value="futures">Binance USDⓈ-M Futures</option><option value="spot">Binance Spot</option><option value="coinpaprika">CoinPaprika · داده تجمیعی بازار</option></select>
    <label class="sub">حداقل حجم ۲۴ساعته</label><select id="minVolume"><option value="1000" selected>۱٬۰۰۰ دلار / USDT</option><option value="2000">۲٬۰۰۰ دلار / USDT</option><option value="5000">۵٬۰۰۰ دلار / USDT</option><option value="10000">۱۰٬۰۰۰ دلار / USDT</option><option value="25000">۲۵٬۰۰۰ دلار / USDT</option><option value="50000">۵۰٬۰۰۰ دلار / USDT</option><option value="100000">۱۰۰٬۰۰۰ دلار / USDT</option><option value="500000">۵۰۰٬۰۰۰ دلار / USDT</option><option value="1000000">۱ میلیون دلار / USDT</option><option value="5000000">۵ میلیون دلار / USDT</option><option value="10000000">۱۰ میلیون دلار / USDT</option><option value="25000000">۲۵ میلیون دلار / USDT</option><option value="50000000">۵۰ میلیون دلار / USDT</option></select>
@@ -1276,6 +1276,111 @@ signalPerformanceToggle.addEventListener('change',syncSignalPerformanceToggle);
 renderSignalArchive();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
+})();
+</script>
+<script>
+(()=>{
+ const PANEL_ID='ccapCloudMonitorPanel', API_KEY='ccap.cloud.apiEndpoint.v1';
+ let apiBase='', refreshTimer=null, vapidPublicKey=null, healthData=null;
+ const root=document.getElementById('market');
+ if(!root||document.getElementById(PANEL_ID))return;
+ const panel=document.createElement('div');panel.id=PANEL_ID;panel.className='card';panel.style.marginBottom='16px';
+ panel.innerHTML=
+ '<div class="card-head"><div><h2>Cloud Engine · پایش مستقل بازار</h2><div class="sub">اسکن سمت سرور؛ حتی وقتی اپ بسته است. هیچ سفارش واقعی ثبت نمی‌شود.</div></div><span class="pill" id="ccapCloudState">اتصال برقرار نشده</span></div>'+
+ '<div class="market-toolbar" style="margin-top:12px">'+
+ '<label class="sub" for="ccapCloudUrl">آدرس Cloudflare Worker</label>'+
+ '<input id="ccapCloudUrl" type="url" inputmode="url" placeholder="https://ccap-market-engine.نام-حساب.workers.dev" autocomplete="url" style="min-width:min(100%,360px)">'+
+ '<button class="btn primary" id="ccapCloudConnect">اتصال و دریافت داده</button>'+
+ '<button class="btn" id="ccapCloudRefresh">بروزرسانی اکنون</button>'+
+ '<button class="btn" id="ccapCloudPush">فعال‌سازی اعلان‌ها</button></div>'+
+ '<div class="market-note" id="ccapCloudStatus" style="margin-top:10px">برای اتصال، آدرس Worker منتشرشده را وارد کن. اسکن سرور پس از Deploy، مستقل از باز بودن این صفحه اجرا می‌شود.</div>'+
+ '<div class="sub" id="ccapCloudUpdated" style="margin:6px 0 10px">آخرین اسکن: هنوز دریافت نشده</div>'+
+ '<div id="ccapCloudRows" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px"></div>'+
+ '<div class="sub" id="ccapCloudFootnote" style="margin-top:10px">امتیازها الگوریتمی و آزمایشی‌اند؛ احتمال موفقیت محسوب نمی‌شوند. منبع کندل و داده‌های مشتقه باید در هر اسکن در دسترس باشند.</div>';
+ root.insertBefore(panel,root.firstElementChild);
+ const el=id=>document.getElementById(id);
+ const state=(text,ok)=>{el('ccapCloudState').textContent=text;el('ccapCloudState').style.borderColor=ok?'rgba(75,224,173,.4)':'rgba(241,201,133,.35)';el('ccapCloudState').style.color=ok?'#8aefc9':'#f1c985'};
+ const safeBase=()=>String(el('ccapCloudUrl').value||'').trim().replace(/\/+$/,'');
+ function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Worker باید یک URL معتبر HTTPS باشد');return value}
+ async function api(path,options={}){const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers:{...(options.headers||{}),...(options.body?{'Content-Type':'application/json'}:{})}});let data={};try{data=await response.json()}catch(e){}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data}
+ function fmtTime(value){if(!value)return 'نامشخص';const d=new Date(value);return Number.isNaN(d.getTime())?'نامشخص':d.toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'medium'})}
+ function node(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=String(text);return n}
+ function renderSnapshot(data){
+  const host=el('ccapCloudRows');host.replaceChildren();
+  const rows=Array.isArray(data.rows)?data.rows:[];
+  if(!rows.length){host.append(node('div','market-note','هنوز داده‌ای برای نمایش وجود ندارد.'));return}
+  rows.forEach(row=>{
+   const card=node('div','strategy-option');card.style.padding='12px';card.style.borderRadius='14px';
+   const top=node('div');top.style.display='flex';top.style.justifyContent='space-between';top.style.gap='8px';top.style.alignItems='center';
+   const symbol=node('strong','',row.symbol||'—');const direction=node('span','tag',(row.direction||'WAIT')+' · '+(row.score??0));
+   direction.style.color=row.direction==='LONG'?'#4be0ad':row.direction==='SHORT'?'#ff718b':'#f1c985';
+   top.append(symbol,direction);card.append(top);
+   const price=node('div','sub',(Number(row.price)||0).toLocaleString('en-US',{maximumFractionDigits:8})+' USDT');price.style.marginTop='4px';card.append(price);
+   card.append(node('div','sub','رژیم: '+(row.regime||'نامشخص')+' · تغییر ۲۴ساعته: '+(Number(row.change24h)||0).toFixed(2)+'%'));
+   const metrics=row.metrics||{};
+   card.append(node('div','sub','حجم نسبی: '+(metrics.volumeRatio??'—')+'× · RSI 15m: '+(metrics.rsi15??'—')+' · تغییر ۱h: '+(metrics.change1h??'—')+'%'));
+   if(Array.isArray(row.strategies)&&row.strategies.length){
+    const mini=node('div','sub');mini.style.marginTop='6px';mini.textContent='Trend '+(row.strategies.find(x=>x.key==='trend')?.long||0)+'/'+(row.strategies.find(x=>x.key==='trend')?.short||0)+' · Breakout '+(row.strategies.find(x=>x.key==='breakout')?.long||0)+'/'+(row.strategies.find(x=>x.key==='breakout')?.short||0);card.append(mini);
+   }
+   host.append(card);
+  });
+ }
+ async function refreshSnapshot(){
+  if(!apiBase)return;
+  try{
+   const data=await api('/api/snapshot');
+   renderSnapshot(data);
+   const scanned=new Date(data.scannedAt),age=Date.now()-scanned.getTime(),fresh=Number.isFinite(age)&&age<180000;
+   el('ccapCloudUpdated').textContent='آخرین اسکن سرور: '+fmtTime(data.scannedAt)+' · منبع: '+(data.provider||'—')+' · وضعیت: '+(fresh?'بروز':'داده قدیمی');
+   el('ccapCloudFootnote').textContent='رژیم کلی: '+(data.marketRegime||'نامشخص')+' · بازه اسکن: '+((data.intervalSeconds||120)/60)+' دقیقه · اسکن سمت سرور مستقل از باز بودن اپ است.';
+   state(fresh?'سرور متصل · داده بروز':'متصل · داده قدیمی',fresh);
+   if(data.stale||data.ok===false)el('ccapCloudStatus').textContent='آخرین تلاش اسکن با خطا روبه‌رو شده است: '+(data.lastError||'خطای دریافت داده');
+   else el('ccapCloudStatus').textContent='اسکن زمان‌بندی‌شده فعال است. اپ هنگام باز بودن، آخرین snapshot سرور را هر ۶۰ ثانیه دریافت می‌کند.';
+  }catch(e){el('ccapCloudStatus').textContent='دریافت snapshot ناموفق بود: '+e.message;state('خطا در دریافت داده',false)}
+ }
+ async function connect(){
+  try{
+   apiBase=endpoint();localStorage.setItem(API_KEY,apiBase);
+   el('ccapCloudStatus').textContent='در حال بررسی اتصال...';state('در حال اتصال',false);
+   healthData=await api('/api/health');
+   try{const k=await api('/api/public-key');vapidPublicKey=k.publicKey||null}catch(e){vapidPublicKey=null}
+   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. زمان‌بندی: '+healthData.cron;
+   await refreshSnapshot();
+   if(refreshTimer)clearInterval(refreshTimer);
+   refreshTimer=setInterval(refreshSnapshot,60000);
+   refreshPushButton();
+  }catch(e){apiBase='';el('ccapCloudStatus').textContent='اتصال برقرار نشد: '+e.message;state('اتصال ناموفق',false)}
+ }
+ function decodeKey(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/')+padding);return Uint8Array.from(raw,c=>c.charCodeAt(0))}
+ async function getRegistration(){if(!('serviceWorker'in navigator))throw new Error('Service Worker در این مرورگر پشتیبانی نمی‌شود');return await navigator.serviceWorker.ready}
+ async function refreshPushButton(){
+  try{const reg=await getRegistration(),sub=await reg.pushManager.getSubscription();el('ccapCloudPush').textContent=sub?'غیرفعال‌سازی اعلان‌ها':'فعال‌سازی اعلان‌ها'}catch(e){el('ccapCloudPush').textContent='اعلان‌ها پشتیبانی نمی‌شوند'}
+ }
+ async function togglePush(){
+  try{
+   if(!apiBase)throw new Error('ابتدا اتصال Worker را برقرار کن');
+   const standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+   if(/iPhone|iPad|iPod/i.test(navigator.userAgent)&&!standalone)throw new Error('برای اعلان در iOS، اپ را از Safari با Add to Home Screen نصب و از همان آیکون باز کن.');
+   if(!('PushManager'in window)||!('Notification'in window))throw new Error('این مرورگر Web Push را پشتیبانی نمی‌کند');
+   const reg=await getRegistration(),existing=await reg.pushManager.getSubscription();
+   if(existing){
+    await api('/api/unsubscribe',{method:'POST',body:JSON.stringify({endpoint:existing.endpoint})});
+    await existing.unsubscribe();el('ccapCloudStatus').textContent='اعلان‌های این دستگاه غیرفعال شد.';
+   }else{
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted')throw new Error('اجازه اعلان‌ها داده نشد');
+    if(!vapidPublicKey){const k=await api('/api/public-key');vapidPublicKey=k.publicKey}
+    const subscription=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:decodeKey(vapidPublicKey)});
+    await api('/api/subscribe',{method:'POST',body:JSON.stringify({subscription:subscription.toJSON()})});
+    el('ccapCloudStatus').textContent='اعلان‌های بازار برای این دستگاه فعال شد.';
+   }
+   await refreshPushButton();
+  }catch(e){el('ccapCloudStatus').textContent='وضعیت اعلان: '+e.message}
+ }
+ el('ccapCloudConnect').addEventListener('click',connect);
+ el('ccapCloudRefresh').addEventListener('click',refreshSnapshot);
+ el('ccapCloudPush').addEventListener('click',togglePush);
+ try{const saved=localStorage.getItem(API_KEY);if(saved){el('ccapCloudUrl').value=saved;connect()}}catch(e){}
 })();
 </script>
 </body></html>
