@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.30 · Glass UI</title>
+<title>CCAP v0.9.31 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -1301,7 +1301,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  '<div class="sub" id="ccapCloudUpdated" style="margin:6px 0 10px">آخرین اسکن: هنوز دریافت نشده</div>'+
  '<div class="card-head" style="margin-top:14px"><div><h2>نمای کلی بازار فیوچرز</h2><div class="sub">قیمت و حجم ۲۰۰ قرارداد پرحجم؛ به‌روزرسانی هر دو دقیقه</div></div><span class="pill" id="ccapCloudMarketCount">— قرارداد</span></div>'+
  '<div class="table-wrap" style="margin-top:8px;max-height:380px;overflow:auto"><table><thead><tr><th>نماد</th><th>قیمت</th><th>تغییر ۲۴ساعت</th><th>حجم ۲۴ساعت</th></tr></thead><tbody id="ccapCloudMarkets"><tr><td colspan="4" class="empty">در انتظار دریافت فهرست بازار...</td></tr></tbody></table></div>'+
- '<div class="card-head" style="margin-top:14px"><div><h2>تحلیل عمیق و چندتایم‌فریم</h2><div class="sub">۶ نماد پرحجم با کندل‌های ۵ دقیقه، ۱۵ دقیقه و یک‌ساعته</div></div><span class="pill">Live Strategy Engine</span></div>'+
+ '<div class="card-head" style="margin-top:14px"><div><h2>تحلیل عمیق و چندتایم‌فریم</h2><div class="sub">۸ نماد در هر اجرا؛ چرخش تحلیل عمیق روی کل ۲۰۰ قرارداد با کندل‌های ۵ دقیقه، ۱۵ دقیقه و یک‌ساعته</div></div><span class="pill">Live Strategy Engine</span></div>'+
  '<div id="ccapCloudRows" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px"></div>'+
  '<div class="sub" id="ccapCloudFootnote" style="margin-top:10px">امتیازها الگوریتمی و آزمایشی‌اند؛ احتمال موفقیت محسوب نمی‌شوند. منبع کندل و داده‌های مشتقه باید در هر اسکن در دسترس باشند.</div>';
  root.insertBefore(panel,root.firstElementChild);
@@ -1355,7 +1355,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    const analysedCount=Array.isArray(data.rows)?data.rows.length:0;
    const scanned=new Date(data.scannedAt),age=Date.now()-scanned.getTime(),fresh=Number.isFinite(age)&&age<180000;
    el('ccapCloudUpdated').textContent='آخرین اسکن سرور: '+fmtTime(data.scannedAt)+' · منبع: '+(data.provider||'—')+' · '+marketCount+' نماد بازار · وضعیت: '+(fresh?'بروز':'داده قدیمی');
-   el('ccapCloudFootnote').textContent='رژیم کلی: '+(data.marketRegime||'نامشخص')+' · فهرست بازار: '+marketCount+' قرارداد · تحلیل عمیق: '+analysedCount+' نماد · بازه اسکن: '+((data.intervalSeconds||120)/60)+' دقیقه · سرور مستقل از باز بودن اپ اجرا می‌شود.';
+   el('ccapCloudFootnote').textContent='رژیم کلی: '+(data.marketRegime||'نامشخص')+' · فهرست بازار: '+marketCount+' قرارداد · تحلیل عمیق این اجرا: '+analysedCount+' نماد · اندازه دسته: '+(data.deepBatchSize||8)+' · چرخه تحلیل عمیق کامل: حدود '+(data.deepCycleMinutes||50)+' دقیقه · بازه اسکن: '+((data.intervalSeconds||120)/60)+' دقیقه · سرور مستقل از باز بودن اپ اجرا می‌شود.';
    state(fresh?'سرور متصل · داده بروز':'متصل · داده قدیمی',fresh);
    if(data.stale||data.ok===false)el('ccapCloudStatus').textContent='آخرین تلاش اسکن با خطا روبه‌رو شده است: '+(data.lastError||'خطای دریافت داده');
    else el('ccapCloudStatus').textContent='اسکن زمان‌بندی‌شده فعال است. اپ هنگام باز بودن، آخرین snapshot سرور را هر ۶۰ ثانیه دریافت می‌کند.';
