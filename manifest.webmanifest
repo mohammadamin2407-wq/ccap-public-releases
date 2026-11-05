@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.26 — داشبورد فارسی مدیریت سرمایه، تحلیل بازار، موتور استراتژی هوشمند تطبیقی و ترکیبی، آزمایشگاه عملکرد سیگنال و مدیریت بودجه ریسک؛ Paper Trading only.",
+  "description": "CCAP v0.9.27 — داشبورد فارسی مدیریت سرمایه، تحلیل زنده و پایش ابری ۲۴/۷ بازار، اعلان‌های Web Push و معاملات آزمایشی؛ بدون ثبت سفارش واقعی.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
@@ -16,8 +16,23 @@
   "background_color": "#070b13",
   "theme_color": "#070b13",
   "icons": [
-    {"src": "./icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any"},
-    {"src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {
+      "src": "./icons/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
