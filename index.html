@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.31 · Glass UI</title>
+<title>CCAP v0.9.32 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -217,6 +217,7 @@ button,input,select,textarea{font:inherit}
     <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>—</b></div>
    </div>
    <div class="market-note" id="signalPerformanceDetail">هنوز داده‌ای برای ارزیابی ثبت نشده است.</div>
+   <button class="btn" id="retryIncompleteSignalsBtn" style="margin-top:8px">ارزیابی مجدد رکوردهای ناقص</button>
    <div class="market-note">این نسخه نرخ برخورد اهداف و زمان رسیدن به آن‌ها را گزارش می‌کند؛ میانگین سود تحقق‌یافته، Drawdown و PnL خالص محاسبه نمی‌شوند، چون مدل خروج پله‌ای، اندازه موقعیت، کارمزد، لغزش و Funding هنوز تعریف نشده‌اند. سوابق قدیمی ۱۵ دقیقه‌ای نیز به‌صورت گذشته‌نگر به داده ۱ دقیقه‌ای تبدیل نمی‌شوند.</div>
   </div>
   <div class="signal-history-toolbar"><label class="sub" for="signalHistoryDays">بازه زمانی</label><select id="signalHistoryDays"><option value="1">۱ روز گذشته</option><option value="2">۲ روز گذشته</option><option value="3">۳ روز گذشته</option><option value="4">۴ روز گذشته</option><option value="5">۵ روز گذشته</option><option value="6">۶ روز گذشته</option><option value="7" selected>۷ روز گذشته</option></select><label class="sub" for="signalHistoryStatus">نمایش</label><select id="signalHistoryStatus"><option value="SUCCESS" selected>سیگنال‌هایی که TP1 را لمس کرده‌اند</option><option value="ALL">همه وضعیت‌ها</option><option value="PENDING">در انتظار نتیجه</option><option value="FAILED">حدضرر پیش از TP1</option><option value="TP1_ONLY">TP1 و سپس حدضرر</option><option value="TP2_SUCCESS">رسیدن به TP2</option><option value="AMBIGUOUS">برخورد مبهم</option></select><button class="btn" id="clearSignalHistory">پاک‌کردن همه سوابق</button></div>
@@ -860,54 +861,48 @@ function archiveSignal(row,time=Date.now(),origin='AUTO'){
 function evaluateSignalArchive(){
  let changed=false;const rows=scannerState.majorRows||[];
  for(const rec of signalState.archive){
-  if(rec.status!=='PENDING')continue;
+  if(rec.status!=='PENDING'||rec.evaluationMode!=='1m'||!signalPerformanceEnabled())continue;
   const row=rows.find(x=>x.baseSymbol===rec.symbol);if(!row)continue;
-  if(rec.evaluationMode==='1m'){
-   if(!signalPerformanceEnabled()||rec.historyIncomplete)continue;
-   const bars=getClosedCandles(row.performanceCandles1m);if(!bars.length)continue;
-   const firstExpected=(Math.floor(rec.createdAt/60000)+1)*60000;
-   const pending=bars.filter(k=>+k[0]>(rec.lastEvaluatedCandleStart??(firstExpected-1)));
-   if(!rec.lastEvaluatedCandleStart&&+bars[0][0]>firstExpected){
-    rec.historyIncomplete=true;rec.evaluationNote='بازه کامل کندل‌های یک‌دقیقه‌ای از زمان ثبت سیگنال در دسترس نیست؛ نتیجه حدس زده نمی‌شود.';changed=true;continue;
-   }
-   if(rec.lastEvaluatedCandleStart&&pending.length&&+pending[0][0]>rec.lastEvaluatedCandleStart+120000){
-    rec.historyIncomplete=true;rec.evaluationNote='در تاریخچه کندل‌های یک‌دقیقه‌ای فاصله داده وجود دارد؛ ارزیابی این رکورد متوقف شد.';changed=true;continue;
-   }
-   for(const k of pending){
-    const ts=+k[0],high=+k[2],low=+k[3],closeAt=Math.max(ts+59999,+k[6]||0);
-    const stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop;
-    const tp1Hit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;
-    const tp2Hit=rec.direction==='LONG'?high>=rec.target2:low<=rec.target2;
-    rec.lastEvaluatedCandleStart=ts;changed=true;
-    if(stopHit&&(tp1Hit||tp2Hit)){
-     rec.status='AMBIGUOUS';rec.ambiguousAt=closeAt;rec.resolvedAt=closeAt;rec.resolution='۱ دقیقه';
-     rec.evaluationNote='در یک کندل یک‌دقیقه‌ای هم حدضرر و هم هدف لمس شده‌اند؛ ترتیب برخورد از OHLC قابل تشخیص نیست.';
-     break;
-    }
-    if(stopHit){
-     rec.stopHitAt=closeAt;rec.status=rec.tp1HitAt?'TP1_ONLY':'FAILED';rec.resolvedAt=closeAt;rec.outcomePrice=rec.stop;rec.resolution='۱ دقیقه';
-     rec.evaluationNote=rec.tp1HitAt?'TP1 پیش‌تر ثبت شده و سپس حدضرر لمس شده است.':'حدضرر پیش از TP1 لمس شده است.';
-     break;
-    }
-    if(tp1Hit&&!rec.tp1HitAt)rec.tp1HitAt=closeAt;
-    if(tp2Hit){
-     if(!rec.tp1HitAt)rec.tp1HitAt=closeAt;
-     rec.tp2HitAt=closeAt;rec.status='TP2_SUCCESS';rec.resolvedAt=closeAt;rec.outcomePrice=rec.target2;rec.resolution='۱ دقیقه';
-     rec.evaluationNote='هدف دوم لمس شده است؛ هدف اول نیز در همان مسیر لمس‌شده محسوب می‌شود.';
-     break;
-    }
-   }
-   continue;
+  const bars=getClosedCandles(row.performanceCandles1m).slice().sort((a,b)=>+a[0]-+b[0]);
+  if(!bars.length)continue;
+  const firstExpected=(Math.floor(rec.createdAt/60000)+1)*60000;
+  const lastSeen=rec.lastEvaluatedCandleStart==null?firstExpected-60000:+rec.lastEvaluatedCandleStart;
+  const pending=bars.filter(k=>+k[0]>lastSeen);
+  if(!pending.length)continue;
+  let expected=lastSeen+60000,gapAt=null;
+  for(const k of pending){const ts=+k[0];if(ts!==expected){gapAt=expected;break}expected=ts+60000}
+  if(gapAt!==null){
+   rec.historyIncomplete=true;rec.historyGapAt=gapAt;
+   rec.evaluationNote='در تاریخچه کندل‌های یک‌دقیقه‌ای حداقل یک دقیقه مفقود است؛ نتیجه تا دریافت تاریخچه پیوسته نامشخص می‌ماند.';
+   changed=true;continue;
   }
-  if(!row.candles15)continue;
-  const bars=getClosedCandles(row.candles15).filter(k=>(+k[0])>rec.createdAt);
-  for(const k of bars){const high=+k[2],low=+k[3],stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop,targetHit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;
-   if(!stopHit&&!targetHit)continue;
-   // Legacy 15m mode retains the original conservative tie-break.
-   rec.status=stopHit?'FAILED':'SUCCESS';rec.resolvedAt=Math.max((+k[0])+15*60*1000-1,+k[6]||0);rec.outcomePrice=stopHit?rec.stop:rec.target1;rec.resolution='۱۵ دقیقه';changed=true;break;
+  if(rec.historyIncomplete){rec.historyIncomplete=false;rec.historyGapAt=null;rec.evaluationNote='تاریخچه پیوسته دریافت شد؛ ارزیابی مجدداً انجام شد.';changed=true}
+  for(const k of pending){
+   const ts=+k[0],high=+k[2],low=+k[3],closeAt=Math.max(ts+59999,+k[6]||0);
+   const stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop;
+   const tp1Hit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;
+   const tp2Hit=rec.direction==='LONG'?high>=rec.target2:low<=rec.target2;
+   rec.lastEvaluatedCandleStart=ts;changed=true;
+   if(stopHit&&(tp1Hit||tp2Hit)){rec.status='AMBIGUOUS';rec.ambiguousAt=closeAt;rec.resolvedAt=closeAt;rec.resolution='۱ دقیقه';rec.evaluationNote='در یک کندل یک‌دقیقه‌ای هم حدضرر و هم هدف لمس شده‌اند؛ ترتیب برخورد از OHLC قابل تشخیص نیست.';break}
+   if(stopHit){rec.stopHitAt=closeAt;rec.status=rec.tp1HitAt?'TP1_ONLY':'FAILED';rec.resolvedAt=closeAt;rec.outcomePrice=rec.stop;rec.resolution='۱ دقیقه';rec.evaluationNote=rec.tp1HitAt?'TP1 پیش‌تر ثبت شده و سپس حدضرر لمس شده است.':'حدضرر پیش از TP1 لمس شده است.';break}
+   if(tp1Hit&&!rec.tp1HitAt)rec.tp1HitAt=closeAt;
+   if(tp2Hit){if(!rec.tp1HitAt)rec.tp1HitAt=closeAt;rec.tp2HitAt=closeAt;rec.status='TP2_SUCCESS';rec.resolvedAt=closeAt;rec.outcomePrice=rec.target2;rec.resolution='۱ دقیقه';rec.evaluationNote='هدف دوم لمس شده است؛ هدف اول نیز در همان مسیر لمس‌شده محسوب می‌شود.';break}
   }
  }
+ for(const rec of signalState.archive){
+  if(rec.status!=='PENDING'||rec.evaluationMode==='1m')continue;
+  const row=rows.find(x=>x.baseSymbol===rec.symbol);if(!row?.candles15)continue;
+  const bars=getClosedCandles(row.candles15).filter(k=>(+k[0])>rec.createdAt);
+  for(const k of bars){const high=+k[2],low=+k[3],stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop,targetHit=rec.direction==='LONG'?high>=rec.target1:low<=rec.target1;if(!stopHit&&!targetHit)continue;rec.status=stopHit?'FAILED':'SUCCESS';rec.resolvedAt=Math.max((+k[0])+15*60*1000-1,+k[6]||0);rec.outcomePrice=stopHit?rec.stop:rec.target1;rec.resolution='۱۵ دقیقه';changed=true;break}
+ }
  if(changed){safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}
+}
+function retrySignalArchiveItem(id){
+ const rec=signalState.archive.find(x=>x.id===id);if(!rec||rec.evaluationMode!=='1m'||!rec.historyIncomplete)return;
+ rec.status='PENDING';rec.historyIncomplete=false;rec.retryRequested=true;rec.retryCount=0;rec.lastEvaluatedCandleStart=null;
+ rec.tp1HitAt=null;rec.tp2HitAt=null;rec.stopHitAt=null;rec.resolvedAt=null;rec.outcomePrice=null;
+ rec.evaluationNote='درخواست ارزیابی مجدد ثبت شد؛ در اسکن بعدی تاریخچه دوباره دریافت می‌شود.';
+ safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('ارزیابی مجدد در اسکن بعدی انجام می‌شود');
 }
 function deleteSignalArchiveItem(id){signalState.archive=signalState.archive.filter(x=>x.id!==id);safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('رکورد حذف شد')}
 function clearSignalArchive(){if(!signalState.archive.length){toast('آرشیو خالی است');return}if(!confirm('تمام سوابق سیگنال این دستگاه پاک شود؟ این کار قابل بازگشت نیست.'))return;signalState.archive=[];safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('تمام سوابق پاک شد')}
@@ -932,7 +927,7 @@ function renderSignalPerformance(recent){
   <div class="signal-history-stat"><small>حدضرر پیش از TP1</small><b class="red">${failed.length}</b></div>
   <div class="signal-history-stat"><small>برخورد مبهم ۱m</small><b class="gold">${ambiguous.length}</b></div>
   <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>${avg}</b></div>`;
- if(detail)detail.textContent=`رکوردهای ۱m: ${tracked.length} · در انتظار: ${tracked.filter(x=>x.status==='PENDING').length} · تاریخچه ناقص: ${incomplete.length} · میانگین مدت فقط از رکوردهای دارای زمان TP1 محاسبه شده است. رویدادهای مبهم از نرخ‌های موفقیت حذف شده‌اند.`;
+ const unknown=tracked.filter(x=>x.status==='PENDING'||x.historyIncomplete).length;if(detail)detail.textContent=`رکوردهای ۱m: ${tracked.length} · تعیین‌تکلیف‌شده: ${resolved.length} · نامشخص/در انتظار: ${unknown} · تاریخچه ناقص: ${incomplete.length}. رکوردهای ناقص و نامشخص از نرخ برد/باخت حذف می‌شوند؛ برخوردهای مبهم نیز در نرخ موفقیت لحاظ نمی‌شوند.`;
 }
 function renderSignalArchive(){
  const days=+(document.getElementById('signalHistoryDays')?.value||7),filter=document.getElementById('signalHistoryStatus')?.value||'SUCCESS',since=Date.now()-days*86400000;
@@ -971,7 +966,7 @@ async function refreshMajorAnalysis(provider=scannerState.provider){if(!provider
   const samples=recordBandSamples(tracked);scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,source:t.source||providerNames[provider],candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است'],liveStrategy:liveStrategyEnabled()?scoreLiveStrategies({isAggregated:true}):null}}});
  }else{
   const base=scannerState.apiBase|| (provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com');
-  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,provider,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:null};row.signal=buildMajorSignal(row,candles1m,candles15,h1);const needsPerformance=signalPerformanceEnabled()&&(signalState.archive.some(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&!rec.historyIncomplete)||(['LONG','SHORT'].includes(row.signal.direction)&&!!row.signal.plan));if(needsPerformance){try{row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base)}catch(e){console.warn('Performance 1m data unavailable for '+baseSym,e)}}row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
+  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,provider,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:null};row.signal=buildMajorSignal(row,candles1m,candles15,h1);const retryRecords=signalState.archive.filter(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&rec.historyIncomplete&&(rec.retryRequested||(rec.retryCount||0)<2));const needsPerformance=signalPerformanceEnabled()&&(retryRecords.length>0||signalState.archive.some(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&!rec.historyIncomplete)||(['LONG','SHORT'].includes(row.signal.direction)&&!!row.signal.plan));if(needsPerformance){try{row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base);retryRecords.forEach(rec=>{rec.retryCount=(rec.retryCount||0)+1;rec.retryRequested=false})}catch(e){retryRecords.forEach(rec=>{rec.retryRequested=false;rec.lastRetryError=String(e?.message||e).slice(0,160)});console.warn('Performance 1m data unavailable for '+baseSym,e)}}row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
   scannerState.majorRows=results.filter(x=>!x.error);if(!scannerState.majorRows.length)throw new Error(results.find(x=>x.error)?.error||'کندل ارزهای اصلی دریافت نشد');
   const sampleItems=tracked.filter(t=>scannerState.majorRows.some(r=>r.baseSymbol===baseSymbol(t)));recordBandSamples(sampleItems);
  }
@@ -1275,6 +1270,7 @@ function syncSignalPerformanceToggle(){
  }else toast('Signal Performance Lab غیرفعال شد؛ آرشیو پایه ادامه دارد');
 }
 signalPerformanceToggle.addEventListener('change',syncSignalPerformanceToggle);
+el('retryIncompleteSignalsBtn').addEventListener('click',()=>{let count=0;for(const rec of signalState.archive){if(rec.evaluationMode==='1m'&&rec.historyIncomplete){rec.retryRequested=true;rec.retryCount=0;rec.status='PENDING';rec.lastEvaluatedCandleStart=null;rec.tp1HitAt=null;rec.tp2HitAt=null;rec.stopHitAt=null;rec.resolvedAt=null;rec.outcomePrice=null;rec.historyIncomplete=false;rec.evaluationNote='درخواست ارزیابی مجدد ثبت شد.';count++}}safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast(count?`${count} رکورد برای ارزیابی مجدد در اسکن بعدی آماده شد`:'رکورد ناقصی برای ارزیابی مجدد وجود ندارد')});
 renderSignalArchive();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
