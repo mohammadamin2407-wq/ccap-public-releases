@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.31 — داشبورد فارسی مدیریت سرمایه، اسکن ابری مستقل بازار، Snapshot تا ۲۰۰ قرارداد USDT، تحلیل چندتایم‌فریم چرخشی ۸تایی روی ۲۰۰ قرارداد و اعلان امن Web Push؛ Paper Trading only.",
+  "description": "CCAP v0.9.32 — داشبورد فارسی مدیریت سرمایه، اسکن ابری مستقل بازار، Snapshot تا ۲۰۰ قرارداد USDT، تحلیل چندتایم‌فریم چرخشی ۸تایی روی ۲۰۰ قرارداد، ارزیابی مجدد تاریخچه ناقص و Paper Trading only.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
