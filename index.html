@@ -1277,8 +1277,8 @@ function renderRiskLedger(){
   return '<div class="signal-event"><div><b>'+riskEscape(r.symbol)+' · '+riskEscape(r.direction)+' · '+status+'</b><small>'+new Date(r.createdAt).toLocaleString('fa-IR')+' · Entry '+fmt(r.entry)+' · Stop '+fmt(r.stop)+'</small><small>ریسک رزروشده: '+fmt(r.riskAmount)+' USDT · حجم تخمینی: '+fmt(r.qty)+'</small></div><div class="actions">'+buttons+'</div></div>';
  }).join('');
 }
-function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger();if(rows.some(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase())){toast('برای این نماد قبلاً بودجه رزرو شده است.');return}const record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره دفتر ریسک ناموفق بود؛ برنامه رزرو نشد. فضای ذخیره‌سازی مرورگر را بررسی کن.');return}renderRiskCapital();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
-function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now()}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now()}else return;try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره تغییر دفتر ریسک ناموفق بود؛ وضعیت تغییر نکرد.');return}if(r.paperOnly||r.dataQuality==='live-price-fallback'){const rec=signalState.archive.find(x=>x.id===String(r.paperTradeId||r.id));if(rec){rec.status=action==='close'?'PAPER_FALLBACK_CLOSED':'PAPER_FALLBACK_CANCELLED';rec.fallbackNote=action==='close'?'Paper fallback بسته شد و از آمار کندل کامل جدا می‌ماند.':'Paper fallback آزاد شد و از آمار کندل کامل جدا می‌ماند.';safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}void syncCloudPerformance()}toast(action==='close'?'برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.':'برنامه اجرا نشد؛ بودجه ریسک آزاد شد.');renderRiskCapital()}
+function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger();if(rows.some(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase())){toast('برای این نماد قبلاً بودجه رزرو شده است.');return}const record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره دفتر ریسک ناموفق بود؛ برنامه رزرو نشد. فضای ذخیره‌سازی مرورگر را بررسی کن.');return}renderRiskCapital();void syncCloudPerformance();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
+function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now()}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now()}else return;try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره تغییر دفتر ریسک ناموفق بود؛ وضعیت تغییر نکرد.');return}if(r.paperOnly||r.dataQuality==='live-price-fallback'){const rec=signalState.archive.find(x=>x.id===String(r.paperTradeId||r.id));if(rec){rec.status=action==='close'?'PAPER_FALLBACK_CLOSED':'PAPER_FALLBACK_CANCELLED';rec.fallbackNote=action==='close'?'Paper fallback بسته شد و از آمار کندل کامل جدا می‌ماند.':'Paper fallback آزاد شد و از آمار کندل کامل جدا می‌ماند.';safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}}void syncCloudPerformance();toast(action==='close'?'برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.':'برنامه اجرا نشد؛ بودجه ریسک آزاد شد.');renderRiskCapital()}
 
 async function run(){
  const btn=el('runStrategyBtn');btn.disabled=true;el('strategyStatus').textContent='در حال دریافت کندل‌های بازار…';
@@ -1338,27 +1338,26 @@ function syncLiveStrategyControls(){
 }
 if(liveStrategyToggle){liveStrategyToggle.checked=liveStrategyEnabled();if(liveStrategyModeSelect)liveStrategyModeSelect.value=liveStrategyMode();const saved=liveStrategyPicks();document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.checked=saved.includes(n.value));liveStrategyToggle.addEventListener('change',syncLiveStrategyControls);liveStrategyModeSelect?.addEventListener('change',syncLiveStrategyControls);document.querySelectorAll('input[name="liveStrategyPick"]').forEach(n=>n.addEventListener('change',syncLiveStrategyControls));syncLiveStrategyControls()}
 const riskCapitalToggle=el('riskCapitalToggle');loadRiskSettings();if(riskCapitalToggle)riskCapitalToggle.checked=riskCapitalEnabled();
-function syncRiskCapitalToggle(){const on=!!riskCapitalToggle.checked;try{localStorage.setItem(RISK_CAPITAL_ENABLED_KEY,String(on))}catch(e){}renderRiskCapital();toast(on?'Risk & Capital Management فعال شد':'مدیریت ریسک غیرفعال شد؛ موتور پایه تغییری نکرد')}
+function syncRiskCapitalToggle(){const on=!!riskCapitalToggle.checked;try{localStorage.setItem(RISK_CAPITAL_ENABLED_KEY,String(on))}catch(e){}renderRiskCapital();void syncCloudPerformance();toast(on?'Risk & Capital Management فعال شد':'مدیریت ریسک غیرفعال شد؛ موتور پایه تغییری نکرد')}
 riskCapitalToggle.addEventListener('change',syncRiskCapitalToggle);
-['riskCapitalBalance','riskCapitalPerTrade','riskCapitalDailyCap','riskCapitalWeeklyCap','riskCapitalLeverage'].forEach(id=>el(id).addEventListener('input',()=>{persistRiskSettings();renderRiskCapital()}));
+['riskCapitalBalance','riskCapitalPerTrade','riskCapitalDailyCap','riskCapitalWeeklyCap','riskCapitalLeverage'].forEach(id=>el(id).addEventListener('input',()=>{persistRiskSettings();renderRiskCapital();queueCloudPerformanceSync()}));
 el('reserveRiskPlanBtn').addEventListener('click',reserveRiskPlan);
 el('riskCapitalLedger').addEventListener('click',e=>{const b=e.target.closest('button[data-risk-action]');if(b)updateRiskReservation(b.dataset.riskAction,b.dataset.riskId)});
 renderRiskCapital();
 const signalPerformanceToggle=el('signalPerformanceToggle');
-let cloudPerformanceSyncBusy=false,automaticPerformanceResumeBusy=false;
+let cloudPerformanceSyncBusy=false,automaticPerformanceResumeBusy=false,cloudPerformanceSyncDebounce=null;
 function localPendingPerformanceRecords(){return signalState.archive.filter(rec=>rec.evaluationMode==='1m'&&rec.status==='PENDING').slice(0,100)}
+function queueCloudPerformanceSync(){clearTimeout(cloudPerformanceSyncDebounce);cloudPerformanceSyncDebounce=setTimeout(()=>void syncCloudPerformance(),500)}
 async function syncCloudPerformance(){
  const stateNode=el('signalPerformanceCloudState');
- if(!signalPerformanceEnabled())return;
  if(typeof window.ccapCloudSyncPerformance!=='function'){if(stateNode)stateNode.textContent='Cloud Engine وصل نشده است؛ ارزیابی محلی پس از بازبودن اپ ادامه دارد. برای ارزیابی در حالت بسته، Worker موجود را از کارت Cloud Engine وصل کن.';return}
  if(cloudPerformanceSyncBusy)return;
- const pending=localPendingPerformanceRecords(),paperLedger=riskLedger().filter(row=>row.paperOnly||row.dataQuality==='live-price-fallback').slice(0,100).map(row=>({...row,symbol:String(row.symbol||'').replace(/USDT$/,'')+'USDT',paperTradeId:String(row.paperTradeId||row.id)}));
- if(!pending.length&&!paperLedger.length){if(stateNode)stateNode.textContent='Cloud Engine متصل است؛ ارزیابی معلقی برای همگام‌سازی وجود ندارد.';return}
+ const enabled=signalPerformanceEnabled(),pending=enabled?localPendingPerformanceRecords():[],paperLedger=riskLedger().filter(row=>row.paperOnly||row.dataQuality==='live-price-fallback').slice(0,100).map(row=>({...row,symbol:String(row.symbol||'').replace(/USDT$/,'')+'USDT',paperTradeId:String(row.paperTradeId||row.id)}));
  cloudPerformanceSyncBusy=true;
  try{
   const records=pending.map(rec=>({id:rec.id,symbol:rec.symbol+'USDT',direction:rec.direction,score:rec.score,provider:rec.provider||scannerState.provider,createdAt:rec.createdAt,validUntil:rec.validUntil||rec.createdAt+15*60000,lastEvaluatedCandleStart:rec.lastEvaluatedCandleStart,tp1HitAt:rec.tp1HitAt,tp2HitAt:rec.tp2HitAt,stopHitAt:rec.stopHitAt,ambiguousAt:rec.ambiguousAt,outcomePrice:rec.outcomePrice,entry:rec.entry,stop:rec.stop,target1:rec.target1,target2:rec.target2,historyIncomplete:!!rec.historyIncomplete,retryCount:rec.retryCount||0,riskContext:riskFallbackContext(rec.symbol)}));
   for(const rec of pending){if(rec.retryRequested)records.find(row=>row.id===rec.id).retryRequested=true}
-  const result=await window.ccapCloudSyncPerformance({records,paperLedger});for(const rec of pending)rec.retryRequested=false;let changed=false;
+  const result=await window.ccapCloudSyncPerformance({enabled,records,paperLedger});for(const rec of pending)rec.retryRequested=false;let changed=false;
   for(const remote of Array.isArray(result.records)?result.records:[]){
    const local=signalState.archive.find(rec=>rec.id===remote.id);if(!local)continue;
    if(local.status==='PAPER_FALLBACK_OPEN'&&['PAPER_FALLBACK_CLOSED','PAPER_FALLBACK_CANCELLED'].includes(remote.status)){local.status=remote.status;local.fallbackNote=remote.status==='PAPER_FALLBACK_CLOSED'?'Paper fallback در دفتر ریسک بسته شد؛ این رکورد از آمار کندل کامل جداست.':'Paper fallback آزاد شد؛ این رکورد از آمار کندل کامل جداست.';changed=true;continue}
@@ -1371,7 +1370,7 @@ async function syncCloudPerformance(){
    }
   }
   if(changed){safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();renderRiskCapital()}
-  if(stateNode)stateNode.textContent=`Cloud Engine متصل است؛ ${result.pendingCount||0} ارزیابی معلق، ${result.candleCompleteCount||0} ارزیابی کامل و ${result.fallbackCount||0} Paper fallback در وضعیت ابری.`;
+  if(stateNode)stateNode.textContent=result.enabled===false?'Cloud Engine متصل است؛ ارزیابی و Paper fallback پس‌زمینه متوقف‌اند. با روشن‌کردن Lab ادامه می‌یابند.':`Cloud Engine متصل است؛ ${result.pendingCount||0} ارزیابی معلق، ${result.candleCompleteCount||0} ارزیابی کامل و ${result.fallbackCount||0} Paper fallback در وضعیت ابری.`;
  }catch(error){if(stateNode)stateNode.textContent='همگام‌سازی Cloud Engine ناموفق بود؛ رکوردها معلق می‌مانند و دوباره تلاش می‌شود. '+String(error?.message||error).slice(0,120)}
  finally{cloudPerformanceSyncBusy=false}
 }
@@ -1388,6 +1387,7 @@ function syncSignalPerformanceToggle(){
  const on=!!signalPerformanceToggle.checked;
  try{localStorage.setItem(SIGNAL_PERFORMANCE_KEY,String(on))}catch(e){}
  renderSignalArchive();
+ void syncCloudPerformance();
  if(on){
   const hasData=(scannerState.majorRows||[]).some(r=>Array.isArray(r.performanceCandles1m)&&r.performanceCandles1m.length>1);
   toast(hasData?'Signal Performance Lab فعال شد':'فعال شد؛ برای دریافت کندل‌های ۱ دقیقه‌ای، تحلیل بازار را دوباره اجرا کن');
@@ -1491,7 +1491,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    await refreshSnapshot();
    window.ccapCloudSyncPerformance=payload=>api('/api/performance/sync',{method:'POST',body:JSON.stringify(payload)});
    window.dispatchEvent(new Event('ccap-cloud-performance-ready'));
-   document.getElementById('signalPerformanceCloudState').textContent=healthData.backgroundPerformance?'Cloud Engine متصل است؛ ارزیابی‌های معلق پس‌زمینه در Worker موجود ادامه پیدا می‌کنند.':'Worker متصل است، اما قابلیت ارزیابی پس‌زمینه در این نسخه فعال نیست.';
+   document.getElementById('signalPerformanceCloudState').textContent=healthData.backgroundPerformance?(healthData.performanceEnabled===false?'Cloud Engine متصل است؛ Lab در Worker متوقف است و با روشن‌کردن دوباره ادامه می‌یابد.':'Cloud Engine متصل است؛ ارزیابی‌های معلق پس‌زمینه در Worker موجود ادامه پیدا می‌کنند.'):'Worker متصل است، اما قابلیت ارزیابی پس‌زمینه در این نسخه فعال نیست.';
    if(refreshTimer)clearInterval(refreshTimer);
    refreshTimer=setInterval(refreshSnapshot,60000);
    refreshPushButton();
