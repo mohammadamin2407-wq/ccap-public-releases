@@ -1,0 +1,20 @@
+{
+  "name": "ccap-market-lab",
+  "version": "0.9.34",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/prepare-vite-public.mjs && vite build",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "dependencies": {
+    "@web3auth/modal": "11.4.3"
+  },
+  "devDependencies": {
+    "vite": "8.3.8"
+  },
+  "overrides": {
+    "@metamask/utils": {
+      "uuid": "11.1.1"
+    }
+  }
+}

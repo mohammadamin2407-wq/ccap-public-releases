@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.33 · Glass UI</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
+<title>CCAP v0.9.34 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -110,11 +110,17 @@ button,input,select,textarea{font:inherit}
 .strategy-tf div{padding:9px 5px;text-align:center;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.025)}
 .strategy-tf small{display:block;color:var(--muted);font-size:9px}.strategy-tf b{font-size:12px}
 @media(max-width:700px){.strategy-grid{grid-template-columns:1fr}.strategy-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.strategy-tf{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.wallet-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:14px}
+.wallet-address{direction:ltr;text-align:left;word-break:break-all;font-family:ui-monospace,monospace;font-size:12px;padding:11px;border:1px solid var(--line);border-radius:10px;background:rgba(0,0,0,.16)}
+.wallet-preview{display:none;border:1px solid rgba(241,201,133,.3);background:rgba(111,76,27,.13);border-radius:12px;padding:13px;margin-top:12px}
+.wallet-preview.open{display:block}.wallet-preview dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:0;font-size:11px}.wallet-preview dt{color:var(--muted)}.wallet-preview dd{margin:0;text-align:left;direction:ltr;overflow-wrap:anywhere}
+.wallet-actions{display:flex;gap:8px;flex-wrap:wrap}.wallet-connected{display:none}.wallet-connected.open{display:block}.wallet-status{min-height:24px}.wallet-tx-link{direction:ltr;display:inline-block;overflow-wrap:anywhere}
+@media(max-width:900px){.wallet-layout{grid-template-columns:1fr}}
 </style></head>
 <body><div class="app">
 <aside class="sidebar"><div class="brand"><div class="logo">C</div><div><strong>Capital Desk</strong><small>Crypto Portfolio Intelligence</small></div></div>
-<nav class="nav"><button class="active" data-page="overview"><span>◫</span>نمای کلی</button><button data-page="trades"><span>⇄</span>معاملات</button><button data-page="capital"><span>↗</span>جریان سرمایه</button><button data-page="assets"><span>◈</span>دارایی‌ها</button><button data-page="market"><span>⌁</span>تحلیل بازار</button><button data-page="strategy"><span>✧</span>Strategy Lab</button><button data-page="import"><span>⇧</span>ورود اطلاعات</button></nav>
-<div class="side-note">حالت فقط خواندنی<br><b style="color:#7de0b9">Read-only workspace</b><br>هیچ سفارش یا برداشتی از این برنامه انجام نمی‌شود.</div></aside>
+<nav class="nav"><button class="active" data-page="overview"><span>◫</span>نمای کلی</button><button data-page="trades"><span>⇄</span>معاملات</button><button data-page="capital"><span>↗</span>جریان سرمایه</button><button data-page="assets"><span>◈</span>دارایی‌ها</button><button data-page="wallet"><span>◉</span>کیف پول</button><button data-page="market"><span>⌁</span>تحلیل بازار</button><button data-page="strategy"><span>✧</span>Strategy Lab</button><button data-page="import"><span>⇧</span>ورود اطلاعات</button></nav>
+<div class="side-note">تحلیل بازار فقط‌خواندنی<br><b style="color:#7de0b9">کیف پول از اسکنر جداست</b><br>انتقال ETH فقط از بخش کیف پول و با تأیید دستی انجام می‌شود.</div></aside>
 <main class="main">
 <header class="top"><div><h1 id="pageTitle">نمای کلی سرمایه</h1><p>مدیریت متمرکز دارایی‌ها و عملکرد معاملاتی</p></div><div class="actions"><span class="pill">● KCEX · ورود دستی اطلاعات</span><button class="btn" id="appUpdateBtn" type="button">↻ بررسی بروزرسانی</button><button class="btn" id="exportBtn">خروجی JSON</button><button class="btn primary" onclick="showPage('import')">+ ورود اطلاعات</button></div></header>
 <section class="section active" id="overview">
@@ -135,6 +141,35 @@ button,input,select,textarea{font:inherit}
 <section class="section" id="capital"><div class="grid stats"><div class="card"><div class="stat-label">واریزهای قابل مشاهده</div><div class="stat-value green">+100.17</div><div class="stat-foot">USDT · ۳ آگوست ۲۰۲۶</div></div><div class="card"><div class="stat-label">برداشت‌های قابل مشاهده</div><div class="stat-value red">-75.78745</div><div class="stat-foot">USDT · دو برداشت</div></div><div class="card"><div class="stat-label">انتقال داخلی</div><div class="stat-value">داخلی</div><div class="stat-foot">از محاسبه سرمایه خارجی حذف می‌شود</div></div><div class="card"><div class="stat-label">Savings Records</div><div class="stat-value green">+0.02</div><div class="stat-foot">USDT · نوع درآمد نیازمند تأیید</div></div></div><div class="card"><div class="card-head"><h2>رویدادهای سرمایه قابل مشاهده</h2><span class="sub">مقادیر ناقص / جزئی</span></div><div class="table-wrap"><table><thead><tr><th>تاریخ</th><th>نوع</th><th>دارایی</th><th>مبلغ</th><th>طبقه‌بندی</th></tr></thead><tbody id="capitalRows"></tbody></table></div></div></section>
 <section class="section" id="assets"><div class="card"><div class="card-head"><h2>دارایی‌های KCEX</h2><span class="pill">Snapshot</span></div><div class="table-wrap"><table><thead><tr><th>دارایی</th><th>نوع حساب</th><th>مقدار</th><th>قیمت</th><th>ارزش گزارش‌شده</th><th>وضعیت</th></tr></thead><tbody><tr><td>USDT</td><td>Spot</td><td>0.0100087</td><td>1.00</td><td>≈ 0.0099 USD</td><td><span class="tag">فعال</span></td></tr><tr><td>CELB</td><td>Spot</td><td>2,912.3</td><td>—</td><td>0.00 USD (نمایش KCEX)</td><td><span class="tag">Delisted</span></td></tr><tr><td>USDT</td><td>Futures</td><td>0.00</td><td>1.00</td><td>0.00 USD</td><td><span class="tag">فعال</span></td></tr></tbody></table></div></div></section>
 
+<section class="section" id="wallet">
+ <div class="card">
+  <div class="card-head"><div><h2>کیف پول درون‌برنامه‌ای CCAP</h2><div class="sub">کیف پول EVM با امضای MPC؛ کلید خصوصی یا عبارت بازیابی در CCAP ذخیره نمی‌شود.</div></div><span class="pill" id="walletBadge">نیازمند راه‌اندازی</span></div>
+  <div class="notice">این کیف پول از سرویس کیف پول تعبیه‌شدهٔ MetaMask Embedded Wallets استفاده می‌کند. ورود، بازیابی و امضا به آن سرویس وابسته است. عبارت بازیابی یا کلید خصوصی را در CCAP وارد نکن. انتقال روی شبکهٔ اصلی برگشت‌ناپذیر است.</div>
+  <div class="wallet-actions"><button class="btn primary" id="walletConnect" type="button">ایجاد / اتصال کیف پول</button><button class="btn" id="walletRefresh" type="button" disabled>بروزرسانی موجودی</button><button class="btn" id="walletDisconnect" type="button" disabled>قطع اتصال</button></div>
+  <div class="market-note wallet-status" id="walletStatus" role="status" aria-live="polite" style="margin-top:10px">برای فعال‌سازی، شناسهٔ عمومی پروژهٔ Embedded Wallets و روش ورود باید در تنظیمات انتشار ثبت شوند.</div>
+ </div>
+ <div class="wallet-layout" style="margin-top:14px">
+  <div class="card wallet-connected" id="walletAccountCard">
+   <div class="card-head"><div><h2>حساب متصل</h2><div class="sub">آدرس عمومی قابل دریافت و واریز</div></div><span class="pill" id="walletNetwork">—</span></div>
+   <div class="wallet-address" id="walletAddress">—</div>
+   <div class="wallet-actions" style="margin-top:9px"><button class="btn" id="walletCopyAddress" type="button">کپی آدرس</button><a class="btn" id="walletExplorerAddress" target="_blank" rel="noopener noreferrer" hidden>مشاهده در مرورگر بلاک‌چین</a><a class="btn" href="https://account.web3auth.io" target="_blank" rel="noopener noreferrer">مدیریت MFA و بازیابی حساب</a></div>
+   <div class="stat-label" style="margin-top:16px">موجودی دارایی بومی شبکه</div><div class="stat-value" id="walletBalance">— <small>ETH</small></div><div class="stat-foot" id="walletBalanceNote">دادهٔ زنده از شبکهٔ متصل</div>
+  </div>
+  <div class="card wallet-connected" id="walletSendCard">
+   <div class="card-head"><div><h2>ارسال ETH</h2><div class="sub">فقط انتقال سادهٔ ETH؛ قرارداد و توکن در این نسخه پشتیبانی نمی‌شود.</div></div><span class="tag">نیازمند تأیید دستی</span></div>
+   <div class="field"><label for="walletRecipient">آدرس گیرنده</label><input id="walletRecipient" type="text" inputmode="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="0x…" dir="ltr"></div>
+   <div class="field"><label for="walletAmount">مقدار ETH</label><input id="walletAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.01" dir="ltr"></div>
+   <div class="wallet-actions"><button class="btn primary" id="walletReview" type="button">بررسی شبکه و کارمزد</button><button class="btn" id="walletCancelReview" type="button" hidden>لغو بررسی</button></div>
+   <div class="wallet-preview" id="walletPreview">
+    <dl><dt>شبکه</dt><dd id="walletPreviewNetwork">—</dd><dt>گیرنده</dt><dd id="walletPreviewTo">—</dd><dt>مقدار</dt><dd id="walletPreviewValue">—</dd><dt>کارمزد تخمینی</dt><dd id="walletPreviewFee">—</dd><dt>موجودی پس از ارسال</dt><dd id="walletPreviewRemaining">—</dd></dl>
+    <div class="field" style="margin:12px 0 8px"><label><input id="walletReviewAck" type="checkbox"> شبکه و آدرس گیرنده را خودم بررسی کردم.</label></div>
+    <button class="btn primary" id="walletSend" type="button" disabled>تأیید و امضای ارسال</button>
+   </div>
+   <div class="market-note wallet-status" id="walletTxStatus" role="status" aria-live="polite" style="margin-top:9px"></div>
+  </div>
+ </div>
+ <div class="market-note" style="margin-top:12px">شبکه‌های مجاز: Ethereum و Sepolia، Base و Base Sepolia. شبکه و مقصد باید پیش از هر امضا بررسی شوند. اتصال این کیف پول به سیگنال‌ها یا موتور سفارش صرافی وجود ندارد؛ Cloud Engine همچنان فقط‌خواندنی است.</div>
+</section>
 <section class="section" id="market">
  <div class="card">
   <div class="card-head"><div><h2>Market Scanner · شناسایی حرکت‌های غیرعادی</h2><div class="sub">داده عمومی بازار چند صرافی · نسخه ۰.۹.۲۹ · راه‌انداز خودکار · انتخاب خودکار منبع پشتیبان · فقط خواندنی و بدون API Key</div></div><div class="status-line"><span class="pill">Build 0.9.29</span><i class="pulse-dot"></i><span id="marketStatus">آماده دریافت داده زنده</span></div></div>
@@ -356,7 +391,7 @@ const capital=[['2026-08-05 20:45:59','Transfer to Spot',-64.69657187,'Internal 
 const fmt=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
 function render(){document.getElementById('recentTrades').innerHTML=positions.slice(0,5).map(row=>`<tr><td>${row.symbol}</td><td>${row.side}</td><td>${row.lev}x</td><td>${fmt(row.entry)}</td><td>${fmt(row.close)}</td><td class="${row.pnl>=0?'green':'red'}">${row.pnl>0?'+':''}${fmt(row.pnl)}</td><td>${row.open}</td></tr>`).join('');document.getElementById('allTrades').innerHTML=positions.map(row=>`<tr><td>${row.symbol}</td><td>${row.side}</td><td>${row.lev}x</td><td>${fmt(row.entry)}</td><td>${fmt(row.close)}</td><td>${fmt(row.amount)}</td><td class="${row.pnl>=0?'green':'red'}">${row.pnl>0?'+':''}${fmt(row.pnl)}</td><td>${row.roe.toFixed(2)}%</td></tr>`).join('');document.getElementById('capitalRows').innerHTML=capital.slice(0,18).map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>USDT</td><td class="${r[2]>=0?'green':'red'}">${r[2]>0?'+':''}${fmt(r[2])}</td><td>${r[3]}</td></tr>`).join('');drawChart()}
 function drawChart(){let svg=document.getElementById('pnlChart'),vals=positions.slice().reverse().map(x=>x.pnl),sum=0,arr=vals.map(v=>(sum+=v)),min=Math.min(0,...arr),max=Math.max(1,...arr),w=700,h=220,p=25;let pts=arr.map((v,i)=>`${p+i*(w-2*p)/(arr.length-1)},${h-p-(v-min)/(max-min)*(h-2*p)}`).join(' ');svg.innerHTML=`<defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#22c58b" stop-opacity=".28"/><stop offset="1" stop-color="#22c58b" stop-opacity="0"/></linearGradient></defs><line x1="20" y1="${h-p}" x2="${w-10}" y2="${h-p}" stroke="#2b3b50"/><line x1="20" y1="${p}" x2="${w-10}" y2="${p}" stroke="#243143" stroke-dasharray="4 5"/><polyline points="${pts}" fill="none" stroke="#36c995" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="22" y="17" fill="#8b9bb0" font-size="11">Cumulative PnL (USDT)</text><text x="${w-10}" y="${h-2}" text-anchor="end" fill="#8b9bb0" font-size="11">۸ پوزیشن نمونه</text>`}
-function showPage(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let names={overview:'نمای کلی سرمایه',trades:'تاریخچه معاملات',capital:'جریان سرمایه',assets:'دارایی‌ها',market:'تحلیل و اسکن زنده بازار',strategy:'آزمایشگاه استراتژی',import:'مرکز ورود اطلاعات'};document.getElementById('pageTitle').textContent=names[page]}
+function showPage(page){document.querySelectorAll('.section').forEach(s=>s.classList.toggle('active',s.id===page));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));let names={overview:'نمای کلی سرمایه',trades:'تاریخچه معاملات',capital:'جریان سرمایه',assets:'دارایی‌ها',wallet:'کیف پول درون‌برنامه‌ای',market:'تحلیل و اسکن زنده بازار',strategy:'آزمایشگاه استراتژی',import:'مرکز ورود اطلاعات'};document.getElementById('pageTitle').textContent=names[page]}
 document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2600)}
 document.getElementById('exportBtn').onclick=()=>{let blob=new Blob([JSON.stringify({positions,capital,source:'User-provided KCEX samples; partial'},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='kcex-dashboard-data.json';a.click();URL.revokeObjectURL(a.href)};
@@ -1533,4 +1568,5 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  try{const saved=localStorage.getItem(API_KEY);if(saved){el('ccapCloudUrl').value=saved;connect()}}catch(e){}
 })();
 </script>
+<script type="module" src="./wallet.js"></script>
 </body></html>
