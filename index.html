@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.34 · Glass UI</title>
+<title>CCAP v0.9.35 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -1438,6 +1438,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
 <script>
 (()=>{
  const PANEL_ID='ccapCloudMonitorPanel', API_KEY='ccap.cloud.apiEndpoint.v1', TOKEN_KEY='ccap.cloud.pushToken.v1';
+ const PUBLIC_APP_URL='https://mohammadamin2407-wq.github.io/ccap-public-releases/';
  let apiBase='', refreshTimer=null, vapidPublicKey=null, healthData=null, pushRegistration=null;
  const root=document.getElementById('market');
  if(!root||document.getElementById(PANEL_ID))return;
@@ -1463,6 +1464,22 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  const el=id=>document.getElementById(id);
  const state=(text,ok)=>{el('ccapCloudState').textContent=text;el('ccapCloudState').style.borderColor=ok?'rgba(75,224,173,.4)':'rgba(241,201,133,.35)';el('ccapCloudState').style.color=ok?'#8aefc9':'#f1c985'};
  const safeBase=()=>String(el('ccapCloudUrl').value||'').trim().replace(/\/+$/,'');
+ function originProblem(){
+  if(location.protocol==='file:')return 'این نسخه از فایل محلی باز شده است؛ مرورگر مبدأ آن را null می‌فرستد و Worker این مبدأ را عمداً به‌دلیل محدودیت CORS نمی‌پذیرد.';
+  if(!['https://mohammadamin2407-wq.github.io','http://localhost:5173','http://127.0.0.1:5173'].includes(location.origin))return 'این دامنه برای اتصال به Worker مجاز نیست. نسخهٔ رسمی HTTPS یا محیط توسعه روی localhost:5173 را باز کن.';
+  return '';
+ }
+ function showConnectError(error){
+  const status=el('ccapCloudStatus'),originIssue=originProblem();
+  if(location.protocol==='file:'){
+   status.replaceChildren(document.createTextNode(originIssue+' نسخهٔ رسمی را باز کن: '));
+   const link=document.createElement('a');link.href=PUBLIC_APP_URL;link.target='_blank';link.rel='noopener noreferrer';link.textContent='بازکردن CCAP روی HTTPS';
+   status.append(link);return;
+  }
+  let message=originIssue||String(error?.message||error);
+  if(!originIssue&&/failed to fetch|networkerror/i.test(message))message='مرورگر به Worker دسترسی نگرفت. نشانی باید با https:// شروع شود؛ اینترنت و آدرس Worker را بررسی کن.';
+  status.textContent='اتصال برقرار نشد: '+message;
+ }
  function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Worker باید یک URL معتبر HTTPS باشد');return value}
  function pushToken(){return String(el('ccapCloudToken').value||'').trim()}
  async function api(path,options={}){const headers={...(options.headers||{}),...(options.body?{'Content-Type':'application/json'}:{})};if(['/api/subscribe','/api/unsubscribe','/api/performance/sync'].includes(path)){const token=pushToken();if(!token)throw new Error('برای همگام‌سازی Cloud Engine، کلید CCAP_PUSH_TOKEN را وارد کن.');headers.Authorization='Bearer '+token}const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers});let data={};try{data=await response.json()}catch(e){}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data}
@@ -1518,6 +1535,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  }
  async function connect(){
   try{
+   const originIssue=originProblem();if(originIssue)throw new Error(originIssue);
    apiBase=endpoint();localStorage.setItem(API_KEY,apiBase);localStorage.setItem(TOKEN_KEY,pushToken());
    el('ccapCloudStatus').textContent='در حال بررسی اتصال...';state('در حال اتصال',false);
    healthData=await api('/api/health');
@@ -1530,7 +1548,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    if(refreshTimer)clearInterval(refreshTimer);
    refreshTimer=setInterval(refreshSnapshot,60000);
    refreshPushButton();
-  }catch(e){apiBase='';el('ccapCloudStatus').textContent='اتصال برقرار نشد: '+e.message;state('اتصال ناموفق',false)}
+  }catch(e){apiBase='';showConnectError(e);state(location.protocol==='file:'?'نسخهٔ HTTPS لازم است':'اتصال ناموفق',false)}
  }
  function decodeKey(value){const padding='='.repeat((4-value.length%4)%4);const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/')+padding);return Uint8Array.from(raw,c=>c.charCodeAt(0))}
  async function getRegistration(){if(!('serviceWorker'in navigator))throw new Error('Service Worker در این مرورگر پشتیبانی نمی‌شود');return await navigator.serviceWorker.ready}
@@ -1561,6 +1579,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  el('ccapCloudConnect').addEventListener('click',connect);
  el('ccapCloudRefresh').addEventListener('click',refreshSnapshot);
  el('ccapCloudPush').addEventListener('click',togglePush);
+ if(location.protocol==='file:')showConnectError(new Error('مبدأ محلی پشتیبانی نمی‌شود'));
  el('ccapCloudToken').value=localStorage.getItem(TOKEN_KEY)||'';
  el('ccapCloudToken').addEventListener('change',()=>localStorage.setItem(TOKEN_KEY,pushToken()));
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&apiBase)refreshSnapshot()});
