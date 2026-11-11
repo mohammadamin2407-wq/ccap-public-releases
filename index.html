@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.32 · Glass UI</title>
+<title>CCAP v0.9.33 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -203,7 +203,7 @@ button,input,select,textarea{font:inherit}
   <div class="card-head" style="margin-top:20px"><div><h2>آرشیو و ارزیابی سیگنال‌ها</h2><div class="sub">ثبت مسیر قیمت تا TP1 / TP2 / SL · حالت پایه ۱۵m و حالت توسعه‌یافته ۱m</div></div><span class="pill" id="signalArchiveCount">۰ با TP1</span></div>
   <div class="strategy-option" id="signalPerformanceControl" style="margin:10px 0;border-color:rgba(138,183,255,.35);padding:14px">
    <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="signalPerformanceToggle"> فعال‌سازی یک‌کلیکی Signal Performance Lab</label>
-   <div class="market-note" style="margin-top:7px">این کلید مستقل از Advanced Intelligence Mode است. روشن: پایش جداگانه کندل‌های بسته‌شده ۱ دقیقه‌ای، ثبت برخورد TP1 و TP2، تشخیص حدضرر پیش/پس از TP1 و برخوردهای مبهم. خاموش: ارزیابی پایه ۱۵ دقیقه‌ای ادامه دارد.</div>
+   <div class="market-note" style="margin-top:7px">این کلید مستقل از Advanced Intelligence Mode است. روشن: اعتبارسنجی و ترمیم خودکار تاریخچه کندل‌های بسته‌شده ۱ دقیقه‌ای و ادامه ارزیابی‌های معلق. اگر داده همچنان ناقص بماند، فقط قیمت تازه از صرافی مستقل همراه با سیگنال معتبر و کنترل ریسک می‌تواند Paper Trading باز کند. خاموش: ارزیابی پایه ۱۵ دقیقه‌ای ادامه دارد.</div>
    <div class="market-note" id="signalPerformanceState">وضعیت: خاموش · آرشیو پایه ۱۵ دقیقه‌ای فعال</div>
   </div>
   <div class="card" id="signalPerformancePanel" style="display:none;margin:10px 0;background:rgba(8,16,29,.42);box-shadow:none">
@@ -217,13 +217,14 @@ button,input,select,textarea{font:inherit}
     <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>—</b></div>
    </div>
    <div class="market-note" id="signalPerformanceDetail">هنوز داده‌ای برای ارزیابی ثبت نشده است.</div>
+   <div class="market-note" id="signalPerformanceCloudState" style="margin-top:6px">ارزیابی پس‌زمینه Cloud Engine پس از اتصال Worker فعال می‌شود؛ تا آن زمان ارزیابی محلی با بازبودن اپ ادامه دارد. هیچ سفارش واقعی به صرافی ارسال نمی‌شود.</div>
    <button class="btn" id="retryIncompleteSignalsBtn" style="margin-top:8px">ارزیابی مجدد رکوردهای ناقص</button>
    <div class="market-note">این نسخه نرخ برخورد اهداف و زمان رسیدن به آن‌ها را گزارش می‌کند؛ میانگین سود تحقق‌یافته، Drawdown و PnL خالص محاسبه نمی‌شوند، چون مدل خروج پله‌ای، اندازه موقعیت، کارمزد، لغزش و Funding هنوز تعریف نشده‌اند. سوابق قدیمی ۱۵ دقیقه‌ای نیز به‌صورت گذشته‌نگر به داده ۱ دقیقه‌ای تبدیل نمی‌شوند.</div>
   </div>
-  <div class="signal-history-toolbar"><label class="sub" for="signalHistoryDays">بازه زمانی</label><select id="signalHistoryDays"><option value="1">۱ روز گذشته</option><option value="2">۲ روز گذشته</option><option value="3">۳ روز گذشته</option><option value="4">۴ روز گذشته</option><option value="5">۵ روز گذشته</option><option value="6">۶ روز گذشته</option><option value="7" selected>۷ روز گذشته</option></select><label class="sub" for="signalHistoryStatus">نمایش</label><select id="signalHistoryStatus"><option value="SUCCESS" selected>سیگنال‌هایی که TP1 را لمس کرده‌اند</option><option value="ALL">همه وضعیت‌ها</option><option value="PENDING">در انتظار نتیجه</option><option value="FAILED">حدضرر پیش از TP1</option><option value="TP1_ONLY">TP1 و سپس حدضرر</option><option value="TP2_SUCCESS">رسیدن به TP2</option><option value="AMBIGUOUS">برخورد مبهم</option></select><button class="btn" id="clearSignalHistory">پاک‌کردن همه سوابق</button></div>
+  <div class="signal-history-toolbar"><label class="sub" for="signalHistoryDays">بازه زمانی</label><select id="signalHistoryDays"><option value="1">۱ روز گذشته</option><option value="2">۲ روز گذشته</option><option value="3">۳ روز گذشته</option><option value="4">۴ روز گذشته</option><option value="5">۵ روز گذشته</option><option value="6">۶ روز گذشته</option><option value="7" selected>۷ روز گذشته</option></select><label class="sub" for="signalHistoryStatus">نمایش</label><select id="signalHistoryStatus"><option value="SUCCESS" selected>سیگنال‌هایی که TP1 را لمس کرده‌اند</option><option value="ALL">همه وضعیت‌ها</option><option value="PENDING">در انتظار نتیجه</option><option value="PAPER_FALLBACK_OPEN">Paper Trading · قیمت مستقل</option><option value="PAPER_FALLBACK_CLOSED">Paper fallback بسته‌شده</option><option value="PAPER_FALLBACK_CANCELLED">Paper fallback آزادشده</option><option value="FAILED">حدضرر پیش از TP1</option><option value="TP1_ONLY">TP1 و سپس حدضرر</option><option value="TP2_SUCCESS">رسیدن به TP2</option><option value="AMBIGUOUS">برخورد مبهم</option></select><button class="btn" id="clearSignalHistory">پاک‌کردن همه سوابق</button></div>
   <div class="signal-history-grid" id="signalHistoryStats"><div class="signal-history-stat"><small>موفق</small><b>۰</b></div><div class="signal-history-stat"><small>در انتظار</small><b>۰</b></div><div class="signal-history-stat"><small>ناموفق</small><b>۰</b></div></div>
   <div id="signalHistoryList"><div class="signal-empty">پس از ثبت سیگنال‌های جدید و رسیدن قیمت به هدف اول، سوابق موفق اینجا نمایش داده می‌شوند.</div></div>
-  <div class="market-note">سوابق از زمان نصب این نسخه به بعد در حافظه همین مرورگر/دستگاه ذخیره می‌شوند؛ سوابق قدیمی که قیمت ورود، حدضرر و هدف ثبت‌شده ندارند، قابل بازسازی دقیق نیستند. برای ارزیابی، داشبورد باید دوباره باز و تحلیل بازار اجرا شود؛ داده‌های این آرشیو بین دستگاه‌ها همگام‌سازی نمی‌شوند.</div>
+  <div class="market-note">سوابق از زمان نصب این نسخه به بعد در حافظه همین مرورگر/دستگاه نگهداری می‌شوند؛ سوابق قدیمی فاقد قیمت‌های ورود/خروج قابل بازسازی نیستند. وقتی Cloud Engine وصل باشد، رکوردهای معلق برای ارزیابی پس‌زمینه همگام می‌شوند.</div>
  </div>
 
  <div class="card" style="margin-top:15px" id="priceBandCenter">
@@ -340,6 +341,7 @@ button,input,select,textarea{font:inherit}
   <div class="market-note">نمودار از داده عمومی بازار منبع انتخاب‌شده ساخته می‌شود. کندل آخر ممکن است هنوز بسته نشده باشد. این نمودار توصیه معاملاتی نیست.</div>
  </div>
 </div>
+<script src="./signal-performance.js"></script>
 <script>
 const positions=[
 {symbol:'ETH/USDT',side:'Short',lev:20,entry:1855.30,close:1895.60,amount:2331.58,pnl:-49.97,roe:-43.69,open:'2026-08-05 17:06:36',closeTime:'2026-08-05 20:33:30'},
@@ -723,38 +725,38 @@ function aggregateKlines(ks,factor=4){
  for(let i=0;i+factor<=rows.length;i+=factor){const g=rows.slice(i,i+factor);if(g.length!==factor)continue;out.push([+g[0][0],+g[0][1],Math.max(...g.map(x=>+x[2])),Math.min(...g.map(x=>+x[3])),+g[g.length-1][4],g.reduce((a,x)=>a+(+x[5]||0),0),+g[g.length-1][6],g.reduce((a,x)=>a+(+x[7]||0),0),0,0,g.reduce((a,x)=>a+(+x[10]||0),0),0])}
  return out;
 }
-async function fetchMajorCandles(provider,t,base){
- if(provider==='bybit'){
-  const j=await apiGet(base+`/v5/market/kline?category=linear&symbol=${t.contract}&interval=15&limit=700`);
-  return bybitCandlesToKlines(envelopeData(j,provider));
- }
+async function fetchMajorCandles(provider,t,base,interval='15m',requestedLimit=700){
+ const cfg={'1m':{bybit:'1',kucoin:1,gate:'1m',binance:'1m',ms:60000},'5m':{bybit:'5',kucoin:5,gate:'5m',binance:'5m',ms:300000},'15m':{bybit:'15',kucoin:15,gate:'15m',binance:'15m',ms:900000},'1h':{bybit:'60',kucoin:60,gate:'1h',binance:'1h',ms:3600000}}[interval];
+ if(!cfg)throw new Error('تایم‌فریم کندل پشتیبانی نمی‌شود: '+interval);
+ const symbol=encodeURIComponent(t.contract||t.symbol),limit=Math.max(30,Math.min(Number(requestedLimit)||700,provider==='kucoin'?500:provider==='bybit'?1000:provider==='gate'?1000:1500)),now=Date.now();
+ if(provider==='bybit')return bybitCandlesToKlines(envelopeData(await apiGet(`${base}/v5/market/kline?category=linear&symbol=${symbol}&interval=${cfg.bybit}&limit=${limit}`),provider));
  if(provider==='kucoin'){
-  const now=Date.now(),j=await apiGet(base+`/api/v1/kline/query?symbol=${t.contract}&granularity=${cfg.kucoin}&from=${now-(limit+10)*cfg.kucoin*60000}&to=${now}`);
-  return kucoinCandlesToKlines(envelopeData(j,provider));
- }
- if(provider==='gate'){
-  const j=await apiGet(base+`/futures/usdt/candlesticks?contract=${t.contract}&interval=${cfg.gate}&limit=${limit}`);
-  return gateCandlesToKlines(j);
- }
- const path=provider==='futures'?'/fapi/v1/klines':'/api/v3/klines';
- return await apiGet(base+path+`?symbol=${t.contract}&interval=${cfg.binance}&limit=${limit}`);
-}
-async function fetchPerformanceCandles1m(provider,t,base){
- const limit=provider==='kucoin'?480:700,now=Date.now(),from=now-(limit+5)*60000;
- if(provider==='bybit'){
-  const j=await apiGet(base+`/v5/market/kline?category=linear&symbol=${t.contract}&interval=1&limit=${limit}`);
-  return bybitCandlesToKlines(envelopeData(j,provider));
- }
- if(provider==='kucoin'){
-  const j=await apiGet(base+`/api/v1/kline/query?symbol=${t.contract}&granularity=1&from=${from}&to=${now}`);
+  const from=now-(limit+5)*cfg.ms,j=await apiGet(`${base}/api/v1/kline/query?symbol=${symbol}&granularity=${cfg.kucoin}&from=${from}&to=${now}`);
   return kucoinCandlesToKlines(envelopeData(j,provider)).map(k=>{if(+k[0]<1e12){k[0]=+k[0]*1000;k[6]=+k[6]*1000}return k});
  }
- if(provider==='gate'){
-  const j=await apiGet(base+`/futures/usdt/candlesticks?contract=${t.contract}&interval=1m&limit=${limit}`);
-  return gateCandlesToKlines(j);
+ if(provider==='gate')return gateCandlesToKlines(await apiGet(`${base}/futures/usdt/candlesticks?contract=${symbol}&interval=${cfg.gate}&limit=${limit}`));
+ const root=base||(provider==='spot'?'https://api.binance.com':'https://fapi.binance.com'),path=provider==='spot'?'/api/v3/klines':'/fapi/v1/klines';
+ return await apiGet(`${root}${path}?symbol=${symbol}&interval=${cfg.binance}&limit=${limit}`);
+}
+async function fetchPerformanceCandles1m(provider,t,base,fromMs,toMs){
+ const minute=60000,end=Math.floor(Number(toMs||Date.now()-minute)/minute)*minute,start=Math.ceil(Number(fromMs||end-500*minute)/minute)*minute;
+ if(end<start)return [];
+ const symbol=encodeURIComponent(t.contract||t.symbol),pageMinutes=provider==='kucoin'?450:provider==='bybit'?900:provider==='gate'?900:1000,pages=[];
+ for(let cursor=start;cursor<=end;){
+  const pageEnd=Math.min(end,cursor+(pageMinutes-1)*minute),endInclusive=pageEnd+minute-1;
+  if(provider==='bybit'){
+   const j=await apiGet(`${base}/v5/market/kline?category=linear&symbol=${symbol}&interval=1&start=${cursor}&end=${endInclusive}&limit=1000`);pages.push(bybitCandlesToKlines(envelopeData(j,provider)));
+  }else if(provider==='kucoin'){
+   const j=await apiGet(`${base}/api/v1/kline/query?symbol=${symbol}&granularity=1&from=${cursor}&to=${endInclusive}`);pages.push(kucoinCandlesToKlines(envelopeData(j,provider)).map(k=>{if(+k[0]<1e12){k[0]=+k[0]*1000;k[6]=+k[6]*1000}return k}));
+  }else if(provider==='gate'){
+   const j=await apiGet(`${base}/futures/usdt/candlesticks?contract=${symbol}&interval=1m&from=${Math.floor(cursor/1000)}&to=${Math.floor(endInclusive/1000)}`);pages.push(gateCandlesToKlines(j));
+  }else{
+   const root=base||(provider==='spot'?'https://api.binance.com':'https://fapi.binance.com'),path=provider==='spot'?'/api/v3/klines':'/fapi/v1/klines';
+   pages.push(await apiGet(`${root}${path}?symbol=${symbol}&interval=1m&startTime=${cursor}&endTime=${endInclusive}&limit=1000`));
+  }
+  cursor=pageEnd+minute;
  }
- const path=provider==='futures'?'/fapi/v1/klines':'/api/v3/klines';
- return await apiGet(base+path+`?symbol=${t.contract}&interval=1m&limit=${limit}`);
+ return CCAPSignalPerformance.mergeMinutePages(pages).candles;
 }
 function calcATR(ks,period=14){const a=(ks||[]).slice(0,-1);if(a.length<period+1)return null;const trs=[];for(let i=a.length-period;i<a.length;i++){const h=+a[i][2],l=+a[i][3],pc=+a[i-1][4];trs.push(Math.max(h-l,Math.abs(h-pc),Math.abs(l-pc)))}return trs.reduce((x,y)=>x+y,0)/trs.length}
 function getClosedCandles(ks){return (ks||[]).slice(0,-1).filter(k=>Number.isFinite(+k[1])&&Number.isFinite(+k[2])&&Number.isFinite(+k[3])&&Number.isFinite(+k[4]))}
@@ -855,28 +857,26 @@ function sendOneSignal(symbol){const r=(scannerState.majorRows||[]).find(x=>x.ba
 function renderSignalCards(){const el=document.getElementById('signalCards'),rows=(scannerState.majorRows||[]).slice();if(!rows.length){el.innerHTML='<div class="signal-empty">اطلاعات ارزهای اصلی هنوز دریافت نشده است.</div>';return}rows.sort((a,b)=>((b.signal?.direction==='LONG'||b.signal?.direction==='SHORT')?1:0)-((a.signal?.direction==='LONG'||a.signal?.direction==='SHORT')?1:0)||(b.signal?.score||0)-(a.signal?.score||0));el.innerHTML=rows.map(r=>{const s=r.signal||{},dir=s.direction||'WAIT',cls=dir==='LONG'?'long':dir==='SHORT'?'short':'wait',label=dir==='LONG'?'خرید / LONG':dir==='SHORT'?'فروش / SHORT':s.dataQuality==='aggregated'?'فقط رصد':'انتظار';const plan=s.plan;return `<div class="signal-card ${cls}"><div class="signal-top"><div><b>${r.baseSymbol}/USDT</b><div class="sub">${r.source} · قیمت ${priceText(r.baseSymbol,r.lastPrice,r.band?.step)}</div></div><span class="signal-dir ${cls}">${label}</span></div><div class="rowline"><span class="sub">امتیاز جهت غالب</span><b>${s.score||0}/100</b></div>${s.liveStrategy?'<div class="market-note">موتور '+(s.liveStrategy.mode==='adaptive'?'ADAPTIVE':'MULTI')+' · '+(s.liveStrategy.status==='unsupported'?'داده ناکافی':s.liveStrategy.regime)+' · '+(s.liveStrategy.selected||[]).map(k=>LIVE_STRATEGY_NAMES[k]).join(' + ')+' · '+(s.liveStrategy.direction||'WAIT')+' · LONG '+(s.liveStrategy.long??0)+' / SHORT '+(s.liveStrategy.short??0)+' · توافق '+(s.liveStrategy.votes?Math.round(s.liveStrategy.agreement*100)+'%':'—')+'</div>':''}${plan?`<div class="signal-values"><div><small>ورود مرجع</small><b>${priceText(r.baseSymbol,plan.entry,r.band?.step)}</b></div><div><small>حدضرر</small><b class="red">${priceText(r.baseSymbol,plan.stop,r.band?.step)}</b></div><div><small>هدف اول</small><b class="green">${priceText(r.baseSymbol,plan.target1,r.band?.step)}</b></div><div><small>هدف دوم</small><b class="green">${priceText(r.baseSymbol,plan.target2,r.band?.step)}</b></div></div>`:`<div class="market-note">${s.reason||'شرایط لازم برای سیگنال ورود کامل نیست.'}</div>`}<div class="market-note">${(s.reasons||[]).slice(0,2).join(' · ')||'نیازمند تأیید بیشتر'} ${(s.risks||[]).length?' · ریسک: '+s.risks.slice(0,1).join(''):''}</div><div class="rowline" style="margin-top:8px"><span class="sub">تغییر ۱۵m ${s.change15==null?'—':pct(s.change15)} · ۱h ${s.change1h==null?'—':pct(s.change1h)}</span>${plan?`<button class="btn" data-notify-symbol="${r.baseSymbol}">ارسال اعلان</button>`:''}</div></div>`}).join('');el.querySelectorAll('[data-notify-symbol]').forEach(b=>b.onclick=()=>sendOneSignal(b.dataset.notifySymbol));}
 function archiveSignal(row,time=Date.now(),origin='AUTO'){
  const s=row.signal||{},p=s.plan;if(!p||!['LONG','SHORT'].includes(s.direction))return;
- const rec={id:`${row.baseSymbol}-${s.direction}-${time}-${Math.random().toString(36).slice(2,7)}`,symbol:row.baseSymbol,direction:s.direction,score:s.score||0,source:row.source||s.source||'—',entry:+p.entry,stop:+p.stop,target1:+p.target1,target2:+p.target2,createdAt:time,status:'PENDING',resolvedAt:null,outcomePrice:null,origin,evaluationMode:signalPerformanceEnabled()?'1m':'15m',tp1HitAt:null,tp2HitAt:null,stopHitAt:null,lastEvaluatedCandleStart:null,historyIncomplete:false};
+ const rec={id:`${row.baseSymbol}-${s.direction}-${time}-${Math.random().toString(36).slice(2,7)}`,symbol:row.baseSymbol,direction:s.direction,score:s.score||0,source:row.source||s.source||'—',provider:row.provider||scannerState.provider,entry:+p.entry,stop:+p.stop,target1:+p.target1,target2:+p.target2,createdAt:time,validUntil:time+15*60*1000,status:'PENDING',resolvedAt:null,outcomePrice:null,origin,evaluationMode:signalPerformanceEnabled()?'1m':'15m',tp1HitAt:null,tp2HitAt:null,stopHitAt:null,lastEvaluatedCandleStart:null,historyIncomplete:false};
  signalState.archive.unshift(rec);signalState.archive=signalState.archive.slice(0,500);safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();
 }
 function evaluateSignalArchive(){
- let changed=false;const rows=scannerState.majorRows||[];
+ let changed=false;const rows=scannerState.majorRows||[],minute=CCAPSignalPerformance.MINUTE_MS,lastClosedStart=Math.floor(Date.now()/minute)*minute-minute;
  for(const rec of signalState.archive){
   if(rec.status!=='PENDING'||rec.evaluationMode!=='1m'||!signalPerformanceEnabled())continue;
   const row=rows.find(x=>x.baseSymbol===rec.symbol);if(!row)continue;
-  const bars=getClosedCandles(row.performanceCandles1m).slice().sort((a,b)=>+a[0]-+b[0]);
-  if(!bars.length)continue;
-  const firstExpected=(Math.floor(rec.createdAt/60000)+1)*60000;
-  const lastSeen=rec.lastEvaluatedCandleStart==null?firstExpected-60000:+rec.lastEvaluatedCandleStart;
-  const pending=bars.filter(k=>+k[0]>lastSeen);
-  if(!pending.length)continue;
-  let expected=lastSeen+60000,gapAt=null;
-  for(const k of pending){const ts=+k[0];if(ts!==expected){gapAt=expected;break}expected=ts+60000}
-  if(gapAt!==null){
-   rec.historyIncomplete=true;rec.historyGapAt=gapAt;
-   rec.evaluationNote='در تاریخچه کندل‌های یک‌دقیقه‌ای حداقل یک دقیقه مفقود است؛ نتیجه تا دریافت تاریخچه پیوسته نامشخص می‌ماند.';
+  const allBars=CCAPSignalPerformance.normalizeMinuteCandles(row.performanceCandles1m).candles,firstExpected=(Math.floor(rec.createdAt/minute)+1)*minute,nextExpected=rec.lastEvaluatedCandleStart==null?firstExpected:+rec.lastEvaluatedCandleStart+minute;
+  if(nextExpected>lastClosedStart)continue;
+  const coveredFrom=Number(row.performanceHistoryFrom||allBars[0]?.[0]||0);
+  if(!coveredFrom||coveredFrom>nextExpected){rec.historyIncomplete=true;rec.historyGapAt=nextExpected;rec.retryCount=(rec.retryCount||0)+1;rec.evaluationNote='تاریخچه قدیمی‌تر از پنجره دریافت کندل است؛ رکورد در انتظار می‌ماند و از آمار کامل حذف است.';changed=true;continue}
+  const validation=CCAPSignalPerformance.validateMinuteHistory(allBars,nextExpected,lastClosedStart);
+  if(!validation.complete){
+   rec.historyIncomplete=true;rec.historyGapAt=validation.gaps[0]||validation.invalidStarts[0]||nextExpected;rec.retryCount=(rec.retryCount||0)+1;
+   rec.evaluationNote=`در تاریخچه ۱m ${validation.gaps.length+validation.invalidStarts.length} دقیقه مفقود یا نامعتبر است؛ در اسکن بعدی دوباره دریافت و ترمیم می‌شود.`;
    changed=true;continue;
   }
-  if(rec.historyIncomplete){rec.historyIncomplete=false;rec.historyGapAt=null;rec.evaluationNote='تاریخچه پیوسته دریافت شد؛ ارزیابی مجدداً انجام شد.';changed=true}
+  const pending=validation.candles.filter(k=>+k[0]>=nextExpected&&+k[0]<=lastClosedStart);
+  if(rec.historyIncomplete){rec.historyIncomplete=false;rec.historyGapAt=null;rec.evaluationNote='تاریخچه ۱m پیوسته شد؛ ارزیابی از سر گرفته شد.';changed=true}
   for(const k of pending){
    const ts=+k[0],high=+k[2],low=+k[3],closeAt=Math.max(ts+59999,+k[6]||0);
    const stopHit=rec.direction==='LONG'?low<=rec.stop:high>=rec.stop;
@@ -888,6 +888,7 @@ function evaluateSignalArchive(){
    if(tp1Hit&&!rec.tp1HitAt)rec.tp1HitAt=closeAt;
    if(tp2Hit){if(!rec.tp1HitAt)rec.tp1HitAt=closeAt;rec.tp2HitAt=closeAt;rec.status='TP2_SUCCESS';rec.resolvedAt=closeAt;rec.outcomePrice=rec.target2;rec.resolution='۱ دقیقه';rec.evaluationNote='هدف دوم لمس شده است؛ هدف اول نیز در همان مسیر لمس‌شده محسوب می‌شود.';break}
   }
+  if(pending.length&&rec.status==='PENDING'){rec.lastEvaluatedCandleStart=+pending[pending.length-1][0];rec.historyIncomplete=false;rec.evaluationNote='کندل‌های یک‌دقیقه‌ای پیوسته تا آخرین دقیقه بسته‌شده بررسی شدند.';changed=true}
  }
  for(const rec of signalState.archive){
   if(rec.status!=='PENDING'||rec.evaluationMode==='1m')continue;
@@ -897,12 +898,69 @@ function evaluateSignalArchive(){
  }
  if(changed){safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}
 }
+function riskFallbackContext(symbol){
+ const settings=riskSettings(),budget=riskBudget(settings),active=riskLedger().some(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(symbol||'').toUpperCase());
+ return {enabled:riskCapitalEnabled(),balance:settings.balance,perTradePct:settings.perTradePct,dayRemaining:budget.dayRemaining,weekRemaining:budget.weekRemaining,leverage:settings.leverage,sameSymbolActive:active,dayStart:riskPeriodStart(false),weekStart:riskPeriodStart(true),knownPaperIds:riskLedger().filter(r=>r.paperOnly||r.dataQuality==='live-price-fallback').map(r=>String(r.paperTradeId||r.id))};
+}
+function providerVenue(provider){return ['spot','futures','binance'].includes(provider)?'binance':provider}
+async function fetchIndependentLivePrice(row,signalProvider){
+ const symbol=String(row.baseSymbol||baseSymbol(row)).toUpperCase()+'USDT',contract=String(row.contract||symbol.replace(/USDT$/,'_USDT')),candidates=['bybit','gate','kucoin','futures','spot'].filter(p=>providerVenue(p)!==providerVenue(signalProvider));
+ let lastError=null;
+ for(const provider of candidates){
+  const fetchedAt=Date.now();
+  try{
+   if(provider==='bybit'){
+    const j=await fetchJsonTarget(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${encodeURIComponent(symbol)}`),rowData=j.result?.list?.[0],price=Number(rowData?.lastPrice),serverTime=Number(j.time);
+    if(j.retCode!==0||!Number.isFinite(price)||price<=0||!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>15000)throw new Error('Bybit quote is stale or invalid');
+    return {symbol,price,provider,verified:true,fetchedAt:Date.now(),exchangeTime:serverTime};
+   }
+   if(provider==='gate'){
+    const j=await fetchJsonTarget(`https://api.gateio.ws/api/v4/futures/usdt/tickers?contract=${encodeURIComponent(contract)}`),item=Array.isArray(j)?j[0]:null,price=Number(item?.last),serverTime=Number(item?.time)*1000;
+    if(!Number.isFinite(price)||price<=0||!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>15000)throw new Error('Gate quote is stale or invalid');
+    return {symbol,price,provider,verified:true,fetchedAt:Date.now(),exchangeTime:serverTime};
+   }
+   if(provider==='kucoin'){
+    const kucoinSymbol=row.contract&&String(row.contract).endsWith('USDTM')?row.contract:(symbol==='BTCUSDT'?'XBTUSDTM':symbol.replace(/USDT$/,'USDTM'));
+    const j=await fetchJsonTarget(`https://api-futures.kucoin.com/api/v1/ticker?symbol=${encodeURIComponent(kucoinSymbol)}`),item=j.data,price=Number(item?.price),serverTime=Number(item?.time);
+    if(j.code!=='200000'||!Number.isFinite(price)||price<=0||!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>15000)throw new Error('KuCoin quote is stale or invalid');
+    return {symbol,price,provider,verified:true,fetchedAt:Date.now(),exchangeTime:serverTime};
+   }
+   const root=provider==='spot'?'https://api.binance.com':'https://fapi.binance.com',tickerPath=provider==='spot'?'/api/v3/ticker/price':'/fapi/v1/ticker/price',timePath=provider==='spot'?'/api/v3/time':'/fapi/v1/time';
+   const [ticker,time]=await Promise.all([fetchJsonTarget(`${root}${tickerPath}?symbol=${encodeURIComponent(symbol)}`),fetchJsonTarget(root+timePath)]),price=Number(ticker.price),serverTime=Number(time.serverTime);
+   if(!Number.isFinite(price)||price<=0||!Number.isFinite(serverTime)||Math.abs(Date.now()-serverTime)>15000)throw new Error('Binance quote is stale or invalid');
+   return {symbol,price,provider,verified:true,fetchedAt:Date.now(),exchangeTime:serverTime};
+  }catch(error){lastError=error}
+ }
+ throw new Error(lastError?.message||'قیمت لحظه‌ای مستقل دریافت نشد.');
+}
+async function attemptFallbackPaperEntries(){
+ if(!signalPerformanceEnabled())return;
+ let changed=false;
+ for(const rec of signalState.archive){
+  if(rec.status!=='PENDING'||rec.evaluationMode!=='1m'||!rec.historyIncomplete)continue;
+  if(Date.now()-(Number(rec.lastFallbackAttemptAt)||0)<60000)continue;
+  const row=(scannerState.majorRows||[]).find(x=>x.baseSymbol===rec.symbol),current=row?.signal,signalFresh=!!row&&Date.now()-(Number(row.signalEvaluatedAt)||0)<=2*60000&&current?.dataQuality==='candles'&&current.direction===rec.direction&&Number(current.score)>=70;
+  rec.lastFallbackAttemptAt=Date.now();changed=true;
+  if(!signalFresh){rec.fallbackNote='در انتظار تحلیل تازه‌ای با همان جهت سیگنال؛ هیچ معامله‌ای باز نشد.';continue}
+  try{
+   const quote=await fetchIndependentLivePrice(row,rec.provider||row.provider||scannerState.provider),decision=CCAPSignalPerformance.fallbackDecision({...rec,plan:{entry:rec.entry,stop:rec.stop,target1:rec.target1,target2:rec.target2},stillValid:true},quote,riskFallbackContext(rec.symbol));
+   if(!decision.ok){rec.fallbackNote=decision.reason;continue}
+   const existing=riskLedger().find(x=>x.paperTradeId===rec.id||x.id===rec.id);
+   if(existing){rec.fallbackTrade=existing;rec.status='PAPER_FALLBACK_OPEN';rec.evaluationMode='price-fallback';rec.paperFallback=true;rec.fallbackNote='ورود آزمایشی از قیمت مستقل ثبت‌شده است؛ این رکورد در آمار کندل کامل محاسبه نمی‌شود.';continue}
+   const trade={...decision.trade,id:rec.id,paperTradeId:rec.id,status:'reserved',origin:'Signal Performance Lab · live-price fallback',createdAt:Date.now(),signalCreatedAt:rec.createdAt};
+   const ledger=riskLedger();ledger.unshift(trade);localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(ledger));
+   rec.fallbackTrade=trade;rec.status='PAPER_FALLBACK_OPEN';rec.evaluationMode='price-fallback';rec.paperFallback=true;rec.fallbackNote='Paper Trading از قیمت مستقل تازه باز شد؛ در آمار معاملات دارای تاریخچه کامل لحاظ نمی‌شود.';
+   renderRiskCapital();
+  }catch(error){rec.fallbackNote='قیمت مستقل یا ذخیره معامله تأیید نشد؛ رکورد در انتظار می‌ماند. '+String(error?.message||error).slice(0,100)}
+ }
+ if(changed){safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}
+}
 function retrySignalArchiveItem(id){
- const rec=signalState.archive.find(x=>x.id===id);if(!rec||rec.evaluationMode!=='1m'||!rec.historyIncomplete)return;
+ const rec=signalState.archive.find(x=>x.id===id);if(!rec||rec.status!=='PENDING'||rec.evaluationMode!=='1m'||!rec.historyIncomplete)return;
  rec.status='PENDING';rec.historyIncomplete=false;rec.retryRequested=true;rec.retryCount=0;rec.lastEvaluatedCandleStart=null;
  rec.tp1HitAt=null;rec.tp2HitAt=null;rec.stopHitAt=null;rec.resolvedAt=null;rec.outcomePrice=null;
  rec.evaluationNote='درخواست ارزیابی مجدد ثبت شد؛ در اسکن بعدی تاریخچه دوباره دریافت می‌شود.';
- safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('ارزیابی مجدد در اسکن بعدی انجام می‌شود');
+ safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();void syncCloudPerformance();toast('ارزیابی مجدد در صف قرار گرفت');
 }
 function deleteSignalArchiveItem(id){signalState.archive=signalState.archive.filter(x=>x.id!==id);safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('رکورد حذف شد')}
 function clearSignalArchive(){if(!signalState.archive.length){toast('آرشیو خالی است');return}if(!confirm('تمام سوابق سیگنال این دستگاه پاک شود؟ این کار قابل بازگشت نیست.'))return;signalState.archive=[];safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast('تمام سوابق پاک شد')}
@@ -912,7 +970,8 @@ function renderSignalPerformance(recent){
  const on=signalPerformanceEnabled();
  if(panel)panel.style.display=on?'block':'none';
  const withData=rows.filter(r=>Array.isArray(r.performanceCandles1m)&&r.performanceCandles1m.length>1).length;
- if(state)state.textContent=on?(withData?`وضعیت: روشن · داده ۱m برای ${withData} ارز دریافت شده است`:'وضعیت: روشن · داده ۱m در اسکن بعدی دریافت می‌شود'):'وضعیت: خاموش · آرشیو پایه ۱۵ دقیقه‌ای فعال';
+ const pendingCount=recent.filter(x=>x.evaluationMode==='1m'&&x.status==='PENDING').length;
+ if(state)state.textContent=on?`وضعیت: روشن · داده ۱m برای ${withData} ارز · ${pendingCount} ارزیابی معلق`:'وضعیت: خاموش · آرشیو پایه ۱۵ دقیقه‌ای فعال';
  if(!on||!stats)return;
  const tracked=recent.filter(x=>x.evaluationMode==='1m');
  const resolved=tracked.filter(x=>['FAILED','TP1_ONLY','TP2_SUCCESS'].includes(x.status)&&!x.historyIncomplete);
@@ -927,7 +986,7 @@ function renderSignalPerformance(recent){
   <div class="signal-history-stat"><small>حدضرر پیش از TP1</small><b class="red">${failed.length}</b></div>
   <div class="signal-history-stat"><small>برخورد مبهم ۱m</small><b class="gold">${ambiguous.length}</b></div>
   <div class="signal-history-stat"><small>میانگین زمان تا TP1</small><b>${avg}</b></div>`;
- const unknown=tracked.filter(x=>x.status==='PENDING'||x.historyIncomplete).length;if(detail)detail.textContent=`رکوردهای ۱m: ${tracked.length} · تعیین‌تکلیف‌شده: ${resolved.length} · نامشخص/در انتظار: ${unknown} · تاریخچه ناقص: ${incomplete.length}. رکوردهای ناقص و نامشخص از نرخ برد/باخت حذف می‌شوند؛ برخوردهای مبهم نیز در نرخ موفقیت لحاظ نمی‌شوند.`;
+ const unknown=tracked.filter(x=>x.status==='PENDING'||x.historyIncomplete).length,fallbackCount=recent.filter(x=>x.paperFallback||x.evaluationMode==='price-fallback').length;if(detail)detail.textContent=`رکوردهای ۱m: ${tracked.length} · تعیین‌تکلیف‌شده با تاریخچه پیوسته: ${resolved.length} · نامشخص/در انتظار: ${unknown} · تاریخچه ناقص: ${incomplete.length} · Paper Trading با قیمت مستقل: ${fallbackCount}. رکوردهای ناقص و ورودهای جایگزین در نرخ‌های مبتنی بر کندل کامل محاسبه نمی‌شوند؛ برخوردهای مبهم نیز در نرخ موفقیت لحاظ نمی‌شوند.`;
 }
 function renderSignalArchive(){
  const days=+(document.getElementById('signalHistoryDays')?.value||7),filter=document.getElementById('signalHistoryStatus')?.value||'SUCCESS',since=Date.now()-days*86400000;
@@ -939,11 +998,12 @@ function renderSignalArchive(){
  const el=document.getElementById('signalHistoryList');renderSignalPerformance(recent);if(!el)return;
  if(!shown.length){el.innerHTML=`<div class="signal-empty">${filter==='SUCCESS'?'در بازه انتخاب‌شده سیگنالی که TP1 را لمس کرده باشد وجود ندارد.':'در بازه انتخاب‌شده رکوردی وجود ندارد.'}</div>`;return}
  el.innerHTML=shown.map(x=>{
-  const status=x.status==='TP2_SUCCESS'?'هدف دوم لمس شد':x.status==='TP1_ONLY'?'TP1 لمس شد؛ سپس حدضرر':x.status==='AMBIGUOUS'?'برخورد مبهم در ۱m':x.status==='SUCCESS'?'TP1 لمس شد · نسخه پایه':x.status==='FAILED'?'حدضرر پیش از TP1':x.tp1HitAt?'TP1 لمس شد · در انتظار ادامه':'در انتظار نتیجه';
-  const badge=['SUCCESS','TP1_ONLY','TP2_SUCCESS'].includes(x.status)?'signal-history-badge':x.status==='FAILED'||x.status==='AMBIGUOUS'?'band-chip resistance':'band-chip';
+  const status=x.status==='PAPER_FALLBACK_OPEN'?'Paper Trading · قیمت مستقل تأیید شد':x.status==='PAPER_FALLBACK_CLOSED'?'Paper fallback · بسته‌شده':x.status==='PAPER_FALLBACK_CANCELLED'?'Paper fallback · لغوشده':x.status==='TP2_SUCCESS'?'هدف دوم لمس شد':x.status==='TP1_ONLY'?'TP1 لمس شد؛ سپس حدضرر':x.status==='AMBIGUOUS'?'برخورد مبهم در ۱m':x.status==='SUCCESS'?'TP1 لمس شد · نسخه پایه':x.status==='FAILED'?'حدضرر پیش از TP1':x.tp1HitAt?'TP1 لمس شد · در انتظار ادامه':'در انتظار نتیجه';
+  const badge=x.status==='PAPER_FALLBACK_OPEN'?'band-chip support':['SUCCESS','TP1_ONLY','TP2_SUCCESS'].includes(x.status)?'signal-history-badge':x.status==='FAILED'||x.status==='AMBIGUOUS'?'band-chip resistance':'band-chip';
   const date=new Date(x.createdAt).toLocaleString('fa-IR'),resolved=x.resolvedAt?`<small>زمان تعیین نتیجه: ${new Date(x.resolvedAt).toLocaleString('fa-IR')} · ${x.resolution||'—'}</small>`:'';
-  const note=x.evaluationNote?x.evaluationNote:x.status==='FAILED'?'حدضرر پیش از هدف اول لمس شد.':x.status==='SUCCESS'?'هدف اول در حالت پایه ۱۵ دقیقه‌ای لمس شد.':x.status==='PENDING'?'نتیجه هنوز با کندل بسته‌شده تأیید نشده است.':'';
-  return `<div class="signal-history-row"><div><div class="signal-top"><div><b>${x.symbol}/USDT</b> <span class="signal-dir ${x.direction==='LONG'?'long':'short'}">${x.direction}</span> <span class="${badge}">${status}</span></div><b>${x.score}/100</b></div><small>زمان ارسال: ${date} · ${x.origin==='MANUAL'?'ارسال دستی':'ارسال خودکار'} · ${x.source} · ${x.evaluationMode==='1m'?'Performance 1m':'Base 15m'}</small><div class="signal-history-price"><span>ورود: ${nfmt(x.entry,6)}</span><span>حدضرر: ${nfmt(x.stop,6)}</span><span>TP1: ${nfmt(x.target1,6)}</span><span>TP2: ${nfmt(x.target2,6)}</span></div>${resolved}<small>${note}</small></div><button class="btn" data-delete-signal="${x.id}">حذف</button></div>`;
+  const note=x.fallbackNote||x.evaluationNote||(x.status==='FAILED'?'حدضرر پیش از هدف اول لمس شد.':x.status==='SUCCESS'?'هدف اول در حالت پایه ۱۵ دقیقه‌ای لمس شد.':x.status==='PENDING'?'نتیجه تا دریافت تاریخچه پیوسته در انتظار می‌ماند.':'');
+  const entry=x.fallbackTrade?.entry||x.entry,mode=x.evaluationMode==='price-fallback'?'Live price fallback · Paper only':x.evaluationMode==='1m'?'Performance 1m':'Base 15m';
+  return `<div class="signal-history-row"><div><div class="signal-top"><div><b>${x.symbol}/USDT</b> <span class="signal-dir ${x.direction==='LONG'?'long':'short'}">${x.direction}</span> <span class="${badge}">${status}</span></div><b>${x.score}/100</b></div><small>زمان ارسال: ${date} · ${x.origin==='MANUAL'?'ارسال دستی':'ارسال خودکار'} · ${x.source} · ${mode}</small><div class="signal-history-price"><span>ورود: ${nfmt(entry,6)}</span><span>حدضرر: ${nfmt(x.fallbackTrade?.stop||x.stop,6)}</span><span>TP1: ${nfmt(x.fallbackTrade?.target1||x.target1,6)}</span><span>TP2: ${nfmt(x.fallbackTrade?.target2||x.target2,6)}</span></div>${resolved}<small>${note}</small></div><button class="btn" data-delete-signal="${x.id}">حذف</button></div>`;
  }).join('');
  el.querySelectorAll('[data-delete-signal]').forEach(b=>b.addEventListener('click',()=>deleteSignalArchiveItem(b.dataset.deleteSignal)));
 }
@@ -961,16 +1021,42 @@ function processSignalTransitions(){const now=Date.now();for(const r of scannerS
  evaluateSignalArchive();
 }
 function renderSignalCenter(){renderSignalCards();renderSignalEvents();const valid=(scannerState.majorRows||[]).filter(r=>['LONG','SHORT'].includes(r.signal?.direction)&&r.signal.score>=70).length;document.getElementById('signalStatus').textContent=valid?`${valid} سیگنال تأییدشده`:'فعلاً سیگنال ورود تأیید نشده';}
-async function refreshMajorAnalysis(provider=scannerState.provider){if(!provider)throw new Error('ابتدا اسکن بازار را اجرا کن');const mode=+(document.getElementById('bandStepMode')?.value||10);let raw=scannerState.universe?.length?scannerState.universe:await fetchUniverse(provider);const map=new Map(raw.map(t=>[baseSymbol(t),t]));let tracked=majorSymbols.map(s=>map.get(s)).filter(Boolean);if(!tracked.length)throw new Error('ارزهای اصلی در منبع انتخابی پیدا نشدند');
+async function refreshMajorAnalysis(provider=scannerState.provider){
+ if(!provider)throw new Error('ابتدا اسکن بازار را اجرا کن');
+ const mode=+(document.getElementById('bandStepMode')?.value||10),raw=scannerState.universe?.length?scannerState.universe:await fetchUniverse(provider),map=new Map(raw.map(t=>[baseSymbol(t),t])),tracked=majorSymbols.map(s=>map.get(s)).filter(Boolean);
+ if(!tracked.length)throw new Error('ارزهای اصلی در منبع انتخابی پیدا نشدند');
  if(provider==='coinpaprika'){
-  const samples=recordBandSamples(tracked);scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,source:t.source||providerNames[provider],candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است'],liveStrategy:liveStrategyEnabled()?scoreLiveStrategies({isAggregated:true}):null}}});
+  const samples=recordBandSamples(tracked),evaluatedAt=Date.now();
+  scannerState.majorRows=tracked.map(t=>{const b=baseSymbol(t);return{baseSymbol:b,symbol:t.symbol,lastPrice:t.lastPrice,provider,source:t.source||providerNames[provider],signalEvaluatedAt:evaluatedAt,candles15:null,band:bandLevelsFromSamples(b,t.lastPrice,mode,samples[b]||[]),signal:{direction:'WAIT',score:0,dataQuality:'aggregated',reason:'منبع تجمیعی کندل ۱۵ دقیقه‌ای و تأیید EMA در اختیار ندارد؛ فقط رصد مومنتوم انجام می‌شود.',change15:t.change15m,change1h:t.change1h,reasons:['داده تجمیعی بازار در دسترس است'],risks:['برای سیگنال ورود به کندل صرافی نیاز است'],liveStrategy:liveStrategyEnabled()?scoreLiveStrategies({isAggregated:true}):null}}});
  }else{
-  const base=scannerState.apiBase|| (provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com');
-  const results=await pool(tracked,3,async t=>{const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]);const h1=aggregateKlines(candles15,4);if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');const baseSym=baseSymbol(t),row={...t,provider,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:null};row.signal=buildMajorSignal(row,candles1m,candles15,h1);const retryRecords=signalState.archive.filter(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&rec.historyIncomplete&&(rec.retryRequested||(rec.retryCount||0)<2));const needsPerformance=signalPerformanceEnabled()&&(retryRecords.length>0||signalState.archive.some(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'&&!rec.historyIncomplete)||(['LONG','SHORT'].includes(row.signal.direction)&&!!row.signal.plan));if(needsPerformance){try{row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base);retryRecords.forEach(rec=>{rec.retryCount=(rec.retryCount||0)+1;rec.retryRequested=false})}catch(e){retryRecords.forEach(rec=>{rec.retryRequested=false;rec.lastRetryError=String(e?.message||e).slice(0,160)});console.warn('Performance 1m data unavailable for '+baseSym,e)}}row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row});
+  const base=scannerState.apiBase||(provider==='bybit'?'https://api.bybit.com':provider==='kucoin'?'https://api-futures.kucoin.com':provider==='gate'?'https://api.gateio.ws/api/v4':provider==='spot'?'https://api.binance.com':'https://fapi.binance.com');
+  const results=await pool(tracked,3,async t=>{
+   const [candles1m,candles15]=await Promise.all([fetchMajorCandles(provider,t,base,'1m',500),fetchMajorCandles(provider,t,base,'15m',700)]),h1=aggregateKlines(candles15,4);
+   if(getClosedCandles(candles1m).length<30||getClosedCandles(candles15).length<30||h1.length<25)throw new Error('کندل کافی در تایم‌فریم ۱m، ۱۵m یا ۱h نیست');
+   const baseSym=baseSymbol(t),row={...t,provider,baseSymbol:baseSym,source:providerNames[provider],candles1m,candles15,performanceCandles1m:[],performanceHistoryFrom:null,performanceTo:null};
+   row.signal=buildMajorSignal(row,candles1m,candles15,h1);row.signalEvaluatedAt=Date.now();
+   const pending=signalPerformanceEnabled()?signalState.archive.filter(rec=>rec.symbol===baseSym&&rec.evaluationMode==='1m'&&rec.status==='PENDING'):[];
+   if(pending.length){
+    const to=Math.floor(Date.now()/60000)*60000-60000,firstExpected=Math.min(...pending.map(rec=>rec.lastEvaluatedCandleStart==null?(Math.floor(rec.createdAt/60000)+1)*60000:Number(rec.lastEvaluatedCandleStart)+60000)),from=Math.max(firstExpected,to-1440*60000+60000);
+    row.performanceHistoryFrom=from;row.performanceTo=to;
+    try{
+     row.performanceCandles1m=await fetchPerformanceCandles1m(provider,t,base,from,to);
+     pending.forEach(rec=>{rec.retryCount=(rec.retryCount||0)+1;rec.retryRequested=false;rec.lastRetryError=null});
+    }catch(error){
+     pending.forEach(rec=>{rec.retryCount=(rec.retryCount||0)+1;rec.retryRequested=false;rec.lastRetryError=String(error?.message||error).slice(0,160)});
+     console.warn('Performance 1m backfill unavailable for '+baseSym,error);
+    }
+   }
+   row.band=bandLevelsFromCandles(baseSym,row.lastPrice,candles15,mode);return row;
+  });
   scannerState.majorRows=results.filter(x=>!x.error);if(!scannerState.majorRows.length)throw new Error(results.find(x=>x.error)?.error||'کندل ارزهای اصلی دریافت نشد');
   const sampleItems=tracked.filter(t=>scannerState.majorRows.some(r=>r.baseSymbol===baseSymbol(t)));recordBandSamples(sampleItems);
  }
- renderRangeAnalysis();renderSignalCenter();processSignalTransitions();document.getElementById('signalPermissionState').textContent=('Notification'in window)?`وضعیت اعلان: ${Notification.permission}`:'اعلان مرورگر پشتیبانی نمی‌شود';document.getElementById('signalStatus').textContent=`تحلیل ${scannerState.majorRows.length} ارز اصلی تکمیل شد`;return scannerState.majorRows;
+ renderRangeAnalysis();renderSignalCenter();processSignalTransitions();
+ await attemptFallbackPaperEntries();
+ await syncCloudPerformance();
+ document.getElementById('signalPermissionState').textContent=('Notification'in window)?`وضعیت اعلان: ${Notification.permission}`:'اعلان مرورگر پشتیبانی نمی‌شود';
+ document.getElementById('signalStatus').textContent=`تحلیل ${scannerState.majorRows.length} ارز اصلی تکمیل شد`;return scannerState.majorRows;
 }
 document.getElementById('signalHistoryDays').addEventListener('change',renderSignalArchive);document.getElementById('signalHistoryStatus').addEventListener('change',renderSignalArchive);document.getElementById('clearSignalHistory').addEventListener('click',clearSignalArchive);
 document.getElementById('enableSignalNotifications').addEventListener('click',async()=>{if(!('Notification'in window)){toast('این مرورگر از اعلان پشتیبانی نمی‌کند');return}try{const p=await Notification.requestPermission();document.getElementById('signalPermissionState').textContent=`وضعیت اعلان: ${p}`;toast(p==='granted'?'اعلان مرورگر فعال شد': 'اجازه اعلان داده نشد')}catch(e){toast('فعال‌سازی اعلان ناموفق بود')}});
@@ -1192,7 +1278,7 @@ function renderRiskLedger(){
  }).join('');
 }
 function reserveRiskPlan(){const p=calculateRiskCapitalPlan();if(!p.ok){toast(p.reason);return}const rows=riskLedger();if(rows.some(r=>r.status==='reserved'&&String(r.symbol||'').toUpperCase()===String(p.symbol||'').toUpperCase())){toast('برای این نماد قبلاً بودجه رزرو شده است.');return}const record={id:Date.now()+'-'+Math.random().toString(36).slice(2,8),symbol:p.symbol,direction:p.direction,entry:p.entry,stop:p.stop,qty:p.qty,notional:p.notional,margin:p.margin,riskAmount:p.riskAmount,createdAt:Date.now(),status:'reserved',leverage:p.settings.leverage};rows.unshift(record);try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره دفتر ریسک ناموفق بود؛ برنامه رزرو نشد. فضای ذخیره‌سازی مرورگر را بررسی کن.');return}renderRiskCapital();toast('برنامه آزمایشی ثبت شد و بودجه ریسک رزرو شد؛ سفارشی ارسال نشد.')}
-function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now()}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now()}else return;try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره تغییر دفتر ریسک ناموفق بود؛ وضعیت تغییر نکرد.');return}toast(action==='close'?'برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.':'برنامه اجرا نشد؛ بودجه ریسک آزاد شد.');renderRiskCapital()}
+function updateRiskReservation(action,id){const rows=riskLedger(),r=rows.find(x=>String(x.id)===String(id));if(!r||r.status!=='reserved')return;if(action==='close'){r.status='closed';r.closedAt=Date.now()}else if(action==='release'){r.status='cancelled';r.cancelledAt=Date.now()}else return;try{localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(rows))}catch(e){toast('ذخیره تغییر دفتر ریسک ناموفق بود؛ وضعیت تغییر نکرد.');return}if(r.paperOnly||r.dataQuality==='live-price-fallback'){const rec=signalState.archive.find(x=>x.id===String(r.paperTradeId||r.id));if(rec){rec.status=action==='close'?'PAPER_FALLBACK_CLOSED':'PAPER_FALLBACK_CANCELLED';rec.fallbackNote=action==='close'?'Paper fallback بسته شد و از آمار کندل کامل جدا می‌ماند.':'Paper fallback آزاد شد و از آمار کندل کامل جدا می‌ماند.';safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive()}void syncCloudPerformance()}toast(action==='close'?'برنامه بسته شد؛ بودجه این دوره مصرف‌شده باقی می‌ماند.':'برنامه اجرا نشد؛ بودجه ریسک آزاد شد.');renderRiskCapital()}
 
 async function run(){
  const btn=el('runStrategyBtn');btn.disabled=true;el('strategyStatus').textContent='در حال دریافت کندل‌های بازار…';
@@ -1259,6 +1345,44 @@ el('reserveRiskPlanBtn').addEventListener('click',reserveRiskPlan);
 el('riskCapitalLedger').addEventListener('click',e=>{const b=e.target.closest('button[data-risk-action]');if(b)updateRiskReservation(b.dataset.riskAction,b.dataset.riskId)});
 renderRiskCapital();
 const signalPerformanceToggle=el('signalPerformanceToggle');
+let cloudPerformanceSyncBusy=false,automaticPerformanceResumeBusy=false;
+function localPendingPerformanceRecords(){return signalState.archive.filter(rec=>rec.evaluationMode==='1m'&&rec.status==='PENDING').slice(0,100)}
+async function syncCloudPerformance(){
+ const stateNode=el('signalPerformanceCloudState');
+ if(!signalPerformanceEnabled())return;
+ if(typeof window.ccapCloudSyncPerformance!=='function'){if(stateNode)stateNode.textContent='Cloud Engine وصل نشده است؛ ارزیابی محلی پس از بازبودن اپ ادامه دارد. برای ارزیابی در حالت بسته، Worker موجود را از کارت Cloud Engine وصل کن.';return}
+ if(cloudPerformanceSyncBusy)return;
+ const pending=localPendingPerformanceRecords(),paperLedger=riskLedger().filter(row=>row.paperOnly||row.dataQuality==='live-price-fallback').slice(0,100).map(row=>({...row,symbol:String(row.symbol||'').replace(/USDT$/,'')+'USDT',paperTradeId:String(row.paperTradeId||row.id)}));
+ if(!pending.length&&!paperLedger.length){if(stateNode)stateNode.textContent='Cloud Engine متصل است؛ ارزیابی معلقی برای همگام‌سازی وجود ندارد.';return}
+ cloudPerformanceSyncBusy=true;
+ try{
+  const records=pending.map(rec=>({id:rec.id,symbol:rec.symbol+'USDT',direction:rec.direction,score:rec.score,provider:rec.provider||scannerState.provider,createdAt:rec.createdAt,validUntil:rec.validUntil||rec.createdAt+15*60000,lastEvaluatedCandleStart:rec.lastEvaluatedCandleStart,tp1HitAt:rec.tp1HitAt,tp2HitAt:rec.tp2HitAt,stopHitAt:rec.stopHitAt,ambiguousAt:rec.ambiguousAt,outcomePrice:rec.outcomePrice,entry:rec.entry,stop:rec.stop,target1:rec.target1,target2:rec.target2,historyIncomplete:!!rec.historyIncomplete,retryCount:rec.retryCount||0,riskContext:riskFallbackContext(rec.symbol)}));
+  for(const rec of pending){if(rec.retryRequested)records.find(row=>row.id===rec.id).retryRequested=true}
+  const result=await window.ccapCloudSyncPerformance({records,paperLedger});for(const rec of pending)rec.retryRequested=false;let changed=false;
+  for(const remote of Array.isArray(result.records)?result.records:[]){
+   const local=signalState.archive.find(rec=>rec.id===remote.id);if(!local)continue;
+   if(local.status==='PAPER_FALLBACK_OPEN'&&['PAPER_FALLBACK_CLOSED','PAPER_FALLBACK_CANCELLED'].includes(remote.status)){local.status=remote.status;local.fallbackNote=remote.status==='PAPER_FALLBACK_CLOSED'?'Paper fallback در دفتر ریسک بسته شد؛ این رکورد از آمار کندل کامل جداست.':'Paper fallback آزاد شد؛ این رکورد از آمار کندل کامل جداست.';changed=true;continue}
+   if(local.status!=='PENDING')continue;
+   if(remote.status==='PAPER_FALLBACK_OPEN'&&remote.fallbackTrade){
+    const ledger=riskLedger();if(!ledger.some(row=>row.paperTradeId===local.id||row.id===local.id)){ledger.unshift({...remote.fallbackTrade,id:local.id,paperTradeId:local.id,status:'reserved',origin:'Signal Performance Lab · cloud live-price fallback'});localStorage.setItem(RISK_CAPITAL_LEDGER_KEY,JSON.stringify(ledger))}
+    local.status='PAPER_FALLBACK_OPEN';local.evaluationMode='price-fallback';local.paperFallback=true;local.historyIncomplete=true;local.fallbackTrade=remote.fallbackTrade;local.fallbackNote='Paper Trading از Cloud Engine و با قیمت مستقل تازه باز شد؛ از آمار کندل کامل حذف است.';changed=true;
+   }else{
+    for(const key of ['status','historyIncomplete','historyGapAt','lastEvaluatedCandleStart','tp1HitAt','tp2HitAt','stopHitAt','resolvedAt','outcomePrice','resolution','evaluationNote','retryCount'])if(remote[key]!==undefined&&local[key]!==remote[key]){local[key]=remote[key];changed=true}
+   }
+  }
+  if(changed){safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();renderRiskCapital()}
+  if(stateNode)stateNode.textContent=`Cloud Engine متصل است؛ ${result.pendingCount||0} ارزیابی معلق، ${result.candleCompleteCount||0} ارزیابی کامل و ${result.fallbackCount||0} Paper fallback در وضعیت ابری.`;
+ }catch(error){if(stateNode)stateNode.textContent='همگام‌سازی Cloud Engine ناموفق بود؛ رکوردها معلق می‌مانند و دوباره تلاش می‌شود. '+String(error?.message||error).slice(0,120)}
+ finally{cloudPerformanceSyncBusy=false}
+}
+window.addEventListener('ccap-cloud-performance-ready',()=>syncCloudPerformance());
+setInterval(async()=>{
+ const pending=localPendingPerformanceRecords();if(!signalPerformanceEnabled()||!pending.length||!scannerState.provider||document.visibilityState!=='visible'||automaticPerformanceResumeBusy)return;
+ if(scannerState.auto&&document.getElementById('market')?.classList.contains('active'))return;
+ automaticPerformanceResumeBusy=true;
+ try{await refreshMajorAnalysis(scannerState.provider)}catch(error){const stateNode=el('signalPerformanceCloudState');if(stateNode)stateNode.textContent='ارزیابی خودکار ناموفق بود؛ کندل‌ها در اسکن بعدی دوباره دریافت می‌شوند. '+String(error?.message||error).slice(0,100)}
+ finally{automaticPerformanceResumeBusy=false}
+},60000);
 try{signalPerformanceToggle.checked=signalPerformanceEnabled()}catch(e){}
 function syncSignalPerformanceToggle(){
  const on=!!signalPerformanceToggle.checked;
@@ -1270,7 +1394,7 @@ function syncSignalPerformanceToggle(){
  }else toast('Signal Performance Lab غیرفعال شد؛ آرشیو پایه ادامه دارد');
 }
 signalPerformanceToggle.addEventListener('change',syncSignalPerformanceToggle);
-el('retryIncompleteSignalsBtn').addEventListener('click',()=>{let count=0;for(const rec of signalState.archive){if(rec.evaluationMode==='1m'&&rec.historyIncomplete){rec.retryRequested=true;rec.retryCount=0;rec.status='PENDING';rec.lastEvaluatedCandleStart=null;rec.tp1HitAt=null;rec.tp2HitAt=null;rec.stopHitAt=null;rec.resolvedAt=null;rec.outcomePrice=null;rec.historyIncomplete=false;rec.evaluationNote='درخواست ارزیابی مجدد ثبت شد.';count++}}safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();toast(count?`${count} رکورد برای ارزیابی مجدد در اسکن بعدی آماده شد`:'رکورد ناقصی برای ارزیابی مجدد وجود ندارد')});
+el('retryIncompleteSignalsBtn').addEventListener('click',()=>{let count=0;for(const rec of signalState.archive){if(rec.status==='PENDING'&&rec.evaluationMode==='1m'&&rec.historyIncomplete){rec.retryRequested=true;rec.retryCount=0;rec.status='PENDING';rec.lastEvaluatedCandleStart=null;rec.tp1HitAt=null;rec.tp2HitAt=null;rec.stopHitAt=null;rec.resolvedAt=null;rec.outcomePrice=null;rec.historyIncomplete=false;rec.evaluationNote='درخواست ارزیابی مجدد ثبت شد.';count++}}safeStorageSet(SIGNAL_ARCHIVE_KEY,signalState.archive);renderSignalArchive();if(count)void syncCloudPerformance();toast(count?`${count} رکورد برای ارزیابی مجدد آماده شد`:'رکورد ناقصی برای ارزیابی مجدد وجود ندارد')});
 renderSignalArchive();
 el('runStrategyBtn').addEventListener('click',run);
 el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.opacity=el('strategyMode').value==='adaptive'?'.45':'1';el('strategyChoices').style.pointerEvents=el('strategyMode').value==='adaptive'?'none':'auto'});
@@ -1288,7 +1412,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  '<div class="market-toolbar" style="margin-top:12px">'+
  '<label class="sub" for="ccapCloudUrl">آدرس Cloudflare Worker</label>'+
  '<input id="ccapCloudUrl" type="url" inputmode="url" placeholder="https://ccap-market-engine.نام-حساب.workers.dev" autocomplete="url" style="min-width:min(100%,360px)">'+
- '<label class="sub" for="ccapCloudToken">کلید امنیتی اعلان‌ها</label>'+
+ '<label class="sub" for="ccapCloudToken">کلید امنیتی</label>'+
  '<input id="ccapCloudToken" type="password" autocomplete="off" placeholder="CCAP_PUSH_TOKEN" style="min-width:min(100%,250px)">'+
  '<button class="btn primary" id="ccapCloudConnect">اتصال و دریافت داده</button>'+
  '<button class="btn" id="ccapCloudRefresh">بروزرسانی اکنون</button>'+
@@ -1306,7 +1430,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  const safeBase=()=>String(el('ccapCloudUrl').value||'').trim().replace(/\/+$/,'');
  function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Worker باید یک URL معتبر HTTPS باشد');return value}
  function pushToken(){return String(el('ccapCloudToken').value||'').trim()}
- async function api(path,options={}){const headers={...(options.headers||{}),...(options.body?{'Content-Type':'application/json'}:{})};if(path==='/api/subscribe'||path==='/api/unsubscribe'){const token=pushToken();if(!token)throw new Error('برای مدیریت اعلان‌ها، کلید امنیتی CCAP_PUSH_TOKEN را وارد کن.');headers.Authorization='Bearer '+token}const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers});let data={};try{data=await response.json()}catch(e){}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data}
+ async function api(path,options={}){const headers={...(options.headers||{}),...(options.body?{'Content-Type':'application/json'}:{})};if(['/api/subscribe','/api/unsubscribe','/api/performance/sync'].includes(path)){const token=pushToken();if(!token)throw new Error('برای همگام‌سازی Cloud Engine، کلید CCAP_PUSH_TOKEN را وارد کن.');headers.Authorization='Bearer '+token}const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers});let data={};try{data=await response.json()}catch(e){}if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data}
  function fmtTime(value){if(!value)return 'نامشخص';const d=new Date(value);return Number.isNaN(d.getTime())?'نامشخص':d.toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'medium'})}
  function node(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=String(text);return n}
  function renderSnapshot(data){
@@ -1363,8 +1487,11 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    el('ccapCloudStatus').textContent='در حال بررسی اتصال...';state('در حال اتصال',false);
    healthData=await api('/api/health');
    try{const k=await api('/api/public-key');vapidPublicKey=k.publicKey||null}catch(e){vapidPublicKey=null}
-   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. زمان‌بندی: '+healthData.cron;
+   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن: '+healthData.cron+' · ارزیابی پس‌زمینه معلق: '+(healthData.pendingEvaluations||0);
    await refreshSnapshot();
+   window.ccapCloudSyncPerformance=payload=>api('/api/performance/sync',{method:'POST',body:JSON.stringify(payload)});
+   window.dispatchEvent(new Event('ccap-cloud-performance-ready'));
+   document.getElementById('signalPerformanceCloudState').textContent=healthData.backgroundPerformance?'Cloud Engine متصل است؛ ارزیابی‌های معلق پس‌زمینه در Worker موجود ادامه پیدا می‌کنند.':'Worker متصل است، اما قابلیت ارزیابی پس‌زمینه در این نسخه فعال نیست.';
    if(refreshTimer)clearInterval(refreshTimer);
    refreshTimer=setInterval(refreshSnapshot,60000);
    refreshPushButton();
