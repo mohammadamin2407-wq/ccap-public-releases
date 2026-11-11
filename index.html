@@ -1478,7 +1478,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    el('ccapCloudFootnote').textContent='رژیم کلی: '+(data.marketRegime||'نامشخص')+' · فهرست بازار: '+marketCount+' قرارداد · تحلیل عمیق این اجرا: '+analysedCount+' نماد · اندازه دسته: '+(data.deepBatchSize||8)+' · چرخه تحلیل عمیق کامل: حدود '+(data.deepCycleMinutes||50)+' دقیقه · بازه اسکن: '+((data.intervalSeconds||120)/60)+' دقیقه · سرور مستقل از باز بودن اپ اجرا می‌شود.';
    state(fresh?'سرور متصل · داده بروز':'متصل · داده قدیمی',fresh);
    if(data.stale||data.ok===false)el('ccapCloudStatus').textContent='آخرین تلاش اسکن با خطا روبه‌رو شده است: '+(data.lastError||'خطای دریافت داده');
-   else el('ccapCloudStatus').textContent='اسکن زمان‌بندی‌شده فعال است. اپ هنگام باز بودن، آخرین snapshot سرور را هر ۶۰ ثانیه دریافت می‌کند.';
+   else el('ccapCloudStatus').textContent='اسکن زمان‌بندی‌شده فعال است. اپ هنگام باز بودن، آخرین snapshot سرور را هر ۶۰ ثانیه دریافت می‌کند.'+(healthData?.pushEnabled?' اعلان و همگام‌سازی فعال است.':' حالت فقط‌خواندنی فعال است؛ برای اعلان و همگام‌سازی، کلید امنیتی لازم است.');
   }catch(e){el('ccapCloudStatus').textContent='دریافت snapshot ناموفق بود: '+e.message;state('خطا در دریافت داده',false)}
  }
  async function connect(){
@@ -1487,7 +1487,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    el('ccapCloudStatus').textContent='در حال بررسی اتصال...';state('در حال اتصال',false);
    healthData=await api('/api/health');
    try{const k=await api('/api/public-key');vapidPublicKey=k.publicKey||null}catch(e){vapidPublicKey=null}
-   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن: '+healthData.cron+' · ارزیابی پس‌زمینه معلق: '+(healthData.pendingEvaluations||0);
+   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن: '+healthData.cron+' · ارزیابی پس‌زمینه معلق: '+(healthData.pendingEvaluations||0)+' · '+(healthData.pushEnabled?'اعلان و همگام‌سازی فعال':'حالت فقط‌خواندنی؛ اعلان و همگام‌سازی نیازمند کلید امنیتی است');
    await refreshSnapshot();
    window.ccapCloudSyncPerformance=payload=>api('/api/performance/sync',{method:'POST',body:JSON.stringify(payload)});
    window.dispatchEvent(new Event('ccap-cloud-performance-ready'));
