@@ -1,5 +1,5 @@
 /* CCAP PWA updater — increment CACHE_NAME for every published release. */
-const CACHE_NAME = 'ccap-shell-v0939';
+const CACHE_NAME = 'ccap-shell-v0940';
 const SHELL = ['./', './index.html', './signal-performance.js', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-180.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
@@ -10,7 +10,6 @@ self.addEventListener('message', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('ccap-shell-') && key !== CACHE_NAME).map(key => caches.delete(key)))).then(() => self.clients.claim()));
 });
-
 self.addEventListener('push', event => {
   let payload = {};
   try { payload = event.data ? event.data.json() : {}; } catch (e) {
