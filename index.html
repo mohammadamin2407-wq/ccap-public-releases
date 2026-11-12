@@ -1088,7 +1088,7 @@ async function refreshMajorAnalysis(provider=scannerState.provider){
   scannerState.majorRows=results.filter(x=>!x.error);if(!scannerState.majorRows.length)throw new Error(results.find(x=>x.error)?.error||'کندل ارزهای اصلی دریافت نشد');
   const sampleItems=tracked.filter(t=>scannerState.majorRows.some(r=>r.baseSymbol===baseSymbol(t)));recordBandSamples(sampleItems);
  }
- renderRangeAnalysis();renderSignalCenter();processSignalTransitions();
+ renderRangeAnalysis();renderSignalCenter();processSignalTransitions();renderRiskCapital();
  await attemptFallbackPaperEntries();
  await syncCloudPerformance();
  document.getElementById('signalPermissionState').textContent=('Notification'in window)?`وضعیت اعلان: ${Notification.permission}`:'اعلان مرورگر پشتیبانی نمی‌شود';
@@ -1262,7 +1262,7 @@ const RISK_CAPITAL_SETTINGS_KEY='ccap.riskCapital.settings.v1';
 const RISK_CAPITAL_LEDGER_KEY='ccap.riskCapital.ledger.v1';
 let riskMarketPlan=null;
 function riskCapitalEnabled(){try{return localStorage.getItem(RISK_CAPITAL_ENABLED_KEY)==='true'}catch(e){return false}}
-function riskSettings(){const val=id=>{const v=el(id)?.value?.trim();return v===''||v==null?NaN:Number(v)};const initialBalance=val('riskCapitalBalance'),rows=riskLedger(),accountRows=rows.filter(r=>Number(r.baseCapital||50)===initialBalance),realizedPnl=accountRows.filter(r=>r.status==='closed'&&Number.isFinite(Number(r.realizedPnl))).reduce((sum,r)=>sum+Number(r.realizedPnl),0),floatingPnl=accountRows.filter(r=>r.status==='reserved').reduce((sum,r)=>{const symbol=String(r.symbol||'').replace(/USDT$/,'').toUpperCase(),market=(scannerState.majorRows||[]).find(x=>String(x.baseSymbol||x.symbol||'').replace(/USDT$/,'').toUpperCase()===symbol),price=Number(market?.price),entry=Number(r.entry),qty=Number(r.qty);if(!Number.isFinite(price)||price<=0||!Number.isFinite(entry)||entry<=0||!Number.isFinite(qty)||qty<=0)return sum;const gross=(price-entry)*qty*(r.direction==='LONG'?1:-1),fees=(entry*qty+price*qty)*.0005;return sum+gross-fees},0);return {initialBalance,realizedPnl,floatingPnl,balance:Math.max(0,initialBalance+realizedPnl),equity:Math.max(0,initialBalance+realizedPnl+floatingPnl),perTradePct:val('riskCapitalPerTrade'),dailyCapPct:val('riskCapitalDailyCap'),weeklyCapPct:val('riskCapitalWeeklyCap'),leverage:val('riskCapitalLeverage')}}
+function riskSettings(){const val=id=>{const v=el(id)?.value?.trim();return v===''||v==null?NaN:Number(v)};const initialBalance=val('riskCapitalBalance'),rows=riskLedger(),accountRows=rows.filter(r=>Number(r.baseCapital||50)===initialBalance),realizedPnl=accountRows.filter(r=>r.status==='closed'&&Number.isFinite(Number(r.realizedPnl))).reduce((sum,r)=>sum+Number(r.realizedPnl),0),floatingPnl=accountRows.filter(r=>r.status==='reserved').reduce((sum,r)=>{const symbol=String(r.symbol||'').replace(/USDT$/,'').toUpperCase(),market=(scannerState.majorRows||[]).find(x=>String(x.baseSymbol||x.symbol||'').replace(/USDT$/,'').toUpperCase()===symbol),price=Number(market?.lastPrice??market?.price),entry=Number(r.entry),qty=Number(r.qty);if(!Number.isFinite(price)||price<=0||!Number.isFinite(entry)||entry<=0||!Number.isFinite(qty)||qty<=0)return sum;const gross=(price-entry)*qty*(r.direction==='LONG'?1:-1),fees=(entry*qty+price*qty)*.0005;return sum+gross-fees},0);return {initialBalance,realizedPnl,floatingPnl,balance:Math.max(0,initialBalance+realizedPnl),equity:Math.max(0,initialBalance+realizedPnl+floatingPnl),perTradePct:val('riskCapitalPerTrade'),dailyCapPct:val('riskCapitalDailyCap'),weeklyCapPct:val('riskCapitalWeeklyCap'),leverage:val('riskCapitalLeverage')}}
 function riskLedger(){const rows=safeStorageGet(RISK_CAPITAL_LEDGER_KEY,[]);return Array.isArray(rows)?rows:[]}
 function riskPeriodStart(weekly=false){const d=new Date();d.setHours(0,0,0,0);if(weekly)d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getTime()}
 function riskUsedInPeriod(rows,start,baseCapital){return rows.filter(r=>Number(r.baseCapital||50)===Number(baseCapital)&&(r.status==='reserved'||(r.status==='closed'&&Number(r.closedAt||r.createdAt)>=start))).reduce((sum,r)=>sum+Math.max(0,Number(r.riskAmount)||0),0)}
@@ -1306,7 +1306,7 @@ function renderRiskCapital(){
  renderRiskLedger();
 }
 function renderRiskLedger(){
- const rows=riskLedger().slice().sort((a,b)=>b.createdAt-a.createdAt),node=el('riskCapitalLedger'),count=el('riskLedgerCount');if(count)count.textContent=rows.length+' برنامه';if(!node)return;
+ const currentCapital=riskSettings().initialBalance,rows=riskLedger().filter(r=>Number(r.baseCapital||50)===currentCapital).slice().sort((a,b)=>b.createdAt-a.createdAt),node=el('riskCapitalLedger'),count=el('riskLedgerCount');if(count)count.textContent=rows.length+' برنامه';if(!node)return;
  if(!rows.length){node.innerHTML='<div class="signal-empty">هنوز برنامه ریسکی ثبت نشده است.</div>';return}
  node.innerHTML=rows.slice(0,8).map(r=>{
   const status=r.status==='reserved'?'رزروشده · بودجه اشغال است':r.status==='closed'?'بسته‌شده · بودجه مصرف‌شده':'اجرا نشد · بودجه آزاد شد';
