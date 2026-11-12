@@ -1,6 +1,6 @@
 {
   "name": "ccap-market-lab",
-  "version": "0.9.36",
+  "version": "0.9.37",
   "private": true,
   "scripts": {
     "build": "node scripts/prepare-vite-public.mjs && vite build",

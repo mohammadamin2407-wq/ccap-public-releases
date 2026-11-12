@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#070b13"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="CCAP"><meta name="mobile-web-app-capable" content="yes"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="./icons/icon-180.png">
-<title>CCAP v0.9.36 · Glass UI</title>
+<title>CCAP v0.9.37 · Glass UI</title>
 <style>
 :root{
  --bg:#070b13;--text:#edf4ff;--muted:#93a4bd;--line:rgba(174,198,235,.16);
@@ -1454,10 +1454,12 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  '<button class="btn" id="ccapCloudRefresh">بروزرسانی اکنون</button>'+
  '<button class="btn" id="ccapCloudPush">فعال‌سازی اعلان‌ها</button></div>'+
  '<div class="market-toolbar" style="margin-top:10px">'+
- '<label class="sub" for="ccapBybitControlToken">کلید کنترل اتصال بای‌بیت Demo</label>'+
+ '<label class="sub" for="ccapBybitMode">محیط حساب Bybit</label>'+
+ '<select id="ccapBybitMode" style="min-width:min(100%,190px)"><option value="demo">Demo آزمایشی</option><option value="live">Live واقعی · فقط خواندن</option></select>'+
+ '<label class="sub" for="ccapBybitControlToken">کلید کنترل اتصال</label>'+
  '<input id="ccapBybitControlToken" type="password" autocomplete="off" placeholder="BYBIT_DEMO_CONTROL_TOKEN" style="min-width:min(100%,300px)">'+
- '<button class="btn" id="ccapBybitDemoCheck" disabled>بررسی اتصال Bybit Demo</button></div>'+
- '<div class="market-note" id="ccapBybitDemoStatus" style="margin-top:8px">فقط آزمون اتصال خواندنی به حساب Demo؛ هیچ سفارش یا معامله‌ای از این مسیر انجام نمی‌شود. کلید API و Secret فقط در Cloudflare نگهداری می‌شوند.</div>'+
+ '<button class="btn" id="ccapBybitCheck" disabled>بررسی اتصال Bybit</button></div>'+
+ '<div class="market-note" id="ccapBybitStatus" style="margin-top:8px">Demo و Live فقط برای آزمون اتصال خواندنی هستند؛ هیچ سفارش یا معامله‌ای از این مسیر انجام نمی‌شود. کلید API و Secret فقط در Cloudflare نگهداری می‌شوند.</div>'+
  '<div class="market-note" id="ccapCloudStatus" style="margin-top:10px">برای اتصال، آدرس Worker منتشرشده را وارد کن. اسکن سرور پس از Deploy، مستقل از باز بودن این صفحه اجرا می‌شود.</div>'+
  '<div class="sub" id="ccapCloudUpdated" style="margin:6px 0 10px">آخرین اسکن: هنوز دریافت نشده</div>'+
  '<div class="card-head" style="margin-top:14px"><div><h2>نمای کلی بازار فیوچرز</h2><div class="sub">قیمت و حجم ۲۰۰ قرارداد پرحجم؛ به‌روزرسانی هر دو دقیقه</div></div><span class="pill" id="ccapCloudMarketCount">— قرارداد</span></div>'+
@@ -1487,33 +1489,42 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  }
  function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Worker باید یک URL معتبر HTTPS باشد');return value}
  function pushToken(){return String(el('ccapCloudToken').value||'').trim()}
+ function bybitMode(){return el('ccapBybitMode').value==='live'?'live':'demo'}
  function bybitControlToken(){return String(el('ccapBybitControlToken').value||'').trim()}
+ function bybitPath(action){return '/api/bybit/'+bybitMode()+'/'+action}
  async function api(path,options={}){
   const headers={...(options.headers||{}),...(options.body?{'Content-Type':'application/json'}:{})};
-  if(path==='/api/bybit/demo/check'){
-   const token=bybitControlToken();if(!token)throw new Error('کلید کنترل Bybit Demo را وارد کن.');headers.Authorization='Bearer '+token;
+  if(path==='/api/bybit/demo/check'||path==='/api/bybit/live/check'){
+   const token=bybitControlToken();if(!token)throw new Error('کلید کنترل اتصال Bybit را وارد کن.');headers.Authorization='Bearer '+token;
   }else if(['/api/subscribe','/api/unsubscribe','/api/performance/sync'].includes(path)){
    const token=pushToken();if(!token)throw new Error('برای همگام‌سازی Cloud Engine، کلید CCAP_PUSH_TOKEN را وارد کن.');headers.Authorization='Bearer '+token;
   }
   const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers});let data={};try{data=await response.json()}catch(e){}
   if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data;
  }
- async function refreshBybitDemoStatus(){
-  const status=await api('/api/bybit/demo/status');
-  el('ccapBybitDemoCheck').disabled=false;
-  el('ccapBybitDemoStatus').textContent=status.apiConfigured&&status.controlConfigured
-   ?'کلیدهای Bybit Demo در Cloudflare تنظیم شده‌اند. برای آزمون اتصال، کلید کنترل را وارد کن؛ دسترسی فقط خواندنی است و معامله خاموش می‌ماند.'
-   :'برای اتصال، API Key و API Secret حساب Demo و یک کلید کنترل جداگانه را در Cloudflare Worker Secrets ثبت کن. این صفحه هیچ کلید Bybit دریافت یا ذخیره نمی‌کند.';
+ function updateBybitControlHint(){
+  const mode=bybitMode();el('ccapBybitControlToken').placeholder=mode==='live'?'BYBIT_LIVE_CONTROL_TOKEN':'BYBIT_DEMO_CONTROL_TOKEN';
+  el('ccapBybitControlToken').value='';
  }
- async function checkBybitDemo(){
-  const button=el('ccapBybitDemoCheck');
+ async function refreshBybitStatus(){
+  const mode=bybitMode(),status=await api(bybitPath('status'));
+  el('ccapBybitCheck').disabled=false;
+  if(mode==='live')el('ccapBybitStatus').textContent=status.apiConfigured&&status.controlConfigured
+   ?'کلیدهای Live در Cloudflare تنظیم شده‌اند. آزمون اتصال فقط اطلاعات پایهٔ حساب واقعی را می‌خواند؛ سفارش واقعی همچنان غیرفعال است.'
+   :'برای Live، یک API Key فقط‌خواندنی برای حساب اصلی و کلید کنترل مستقل را در Cloudflare Worker Secrets ثبت کن. این صفحه کلید Bybit را دریافت یا ذخیره نمی‌کند.';
+  else el('ccapBybitStatus').textContent=status.apiConfigured&&status.controlConfigured
+   ?'کلیدهای Demo در Cloudflare تنظیم شده‌اند. آزمون اتصال فقط اطلاعات پایه را می‌خواند و معامله خاموش می‌ماند.'
+   :'برای Demo، API Key و API Secret حساب آزمایشی و کلید کنترل مستقل را در Cloudflare Worker Secrets ثبت کن. این صفحه کلید Bybit را دریافت یا ذخیره نمی‌کند.';
+ }
+ async function checkBybitConnection(){
+  const button=el('ccapBybitCheck'),mode=bybitMode();
   try{
    if(!apiBase)throw new Error('ابتدا Cloud Engine را وصل کن.');
-   if(!bybitControlToken())throw new Error('کلید کنترل Bybit Demo را وارد کن.');
-   button.disabled=true;el('ccapBybitDemoStatus').textContent='در حال بررسی اتصال خواندنی به Bybit Demo...';
-   const result=await api('/api/bybit/demo/check',{method:'POST',body:'{}'});
-   el('ccapBybitDemoStatus').textContent=result.connected?'اتصال Bybit Demo موفق است؛ فقط خواندن اطلاعات پایهٔ حساب انجام شد و معامله خاموش است.':'اتصال Bybit Demo برقرار نشد.';
-  }catch(error){el('ccapBybitDemoStatus').textContent='آزمون اتصال Bybit Demo ناموفق بود: '+String(error?.message||error)}
+   if(!bybitControlToken())throw new Error('کلید کنترل اتصال Bybit را وارد کن.');
+   button.disabled=true;el('ccapBybitStatus').textContent='در حال بررسی اتصال خواندنی Bybit '+(mode==='live'?'Live':'Demo')+'...';
+   const result=await api(bybitPath('check'),{method:'POST',body:'{}'});
+   el('ccapBybitStatus').textContent=result.connected?'اتصال Bybit '+(mode==='live'?'Live':'Demo')+' موفق است؛ فقط اطلاعات پایهٔ حساب خوانده شد و معامله خاموش است.':'اتصال Bybit برقرار نشد.';
+  }catch(error){el('ccapBybitStatus').textContent='آزمون اتصال Bybit ناموفق بود: '+String(error?.message||error)}
   finally{button.disabled=!apiBase}
  }
  function fmtTime(value){if(!value)return 'نامشخص';const d=new Date(value);return Number.isNaN(d.getTime())?'نامشخص':d.toLocaleString('fa-IR',{dateStyle:'short',timeStyle:'medium'})}
@@ -1573,7 +1584,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    el('ccapCloudStatus').textContent='در حال بررسی اتصال...';state('در حال اتصال',false);
    healthData=await api('/api/health');
    try{const k=await api('/api/public-key');vapidPublicKey=k.publicKey||null}catch(e){vapidPublicKey=null}
-   try{await refreshBybitDemoStatus()}catch(e){el('ccapBybitDemoStatus').textContent='برای آزمون Bybit Demo، ابتدا نسخهٔ جدید Worker را Deploy کن.';el('ccapBybitDemoCheck').disabled=true}
+   try{await refreshBybitStatus()}catch(e){el('ccapBybitStatus').textContent='برای آزمون اتصال Bybit، ابتدا نسخهٔ جدید Worker را Deploy کن.';el('ccapBybitCheck').disabled=true}
    el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن: '+healthData.cron+' · ارزیابی پس‌زمینه معلق: '+(healthData.pendingEvaluations||0)+' · '+(healthData.pushEnabled?'اعلان و همگام‌سازی فعال':'حالت فقط‌خواندنی؛ اعلان و همگام‌سازی نیازمند کلید امنیتی است');
    await refreshSnapshot();
    window.ccapCloudSyncPerformance=payload=>api('/api/performance/sync',{method:'POST',body:JSON.stringify(payload)});
@@ -1613,7 +1624,8 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  el('ccapCloudConnect').addEventListener('click',connect);
  el('ccapCloudRefresh').addEventListener('click',refreshSnapshot);
  el('ccapCloudPush').addEventListener('click',togglePush);
- el('ccapBybitDemoCheck').addEventListener('click',checkBybitDemo);
+ el('ccapBybitCheck').addEventListener('click',checkBybitConnection);
+ el('ccapBybitMode').addEventListener('change',()=>{updateBybitControlHint();if(apiBase)refreshBybitStatus().catch(error=>{el('ccapBybitStatus').textContent='وضعیت اتصال Bybit دریافت نشد: '+String(error?.message||error)})});
  if(location.protocol==='file:')showConnectError(new Error('مبدأ محلی پشتیبانی نمی‌شود'));
  el('ccapCloudToken').value=localStorage.getItem(TOKEN_KEY)||'';
  el('ccapCloudToken').addEventListener('change',()=>localStorage.setItem(TOKEN_KEY,pushToken()));
