@@ -2,7 +2,7 @@
   "id": "./",
   "name": "CCAP",
   "short_name": "CCAP",
-  "description": "CCAP v0.9.39 — گزارش سیگنال و هشدار تضعیف با نمایش خلاصه و کنترل نمایش بیشتر/کمتر، داده عمومی Bitunix، تحلیل چندتایم‌فریم و Paper Trading.",
+  "description": "CCAP v0.9.40 — اتصال خودکار به Cloud Engine رسمی برای پایش مستقل بازار، Bitunix، تحلیل چندتایم‌فریم و Paper Trading؛ کلید امنیتی فقط برای اعلان و همگام‌سازی.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
