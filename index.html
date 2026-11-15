@@ -69,6 +69,7 @@ button,input,select,textarea{font:inherit}
 .signal-card .market-note{font-size:10px}.signal-card .btn{padding:6px 9px;font-size:10px}
 .signal-event{border:1px solid rgba(174,198,235,.12);border-radius:10px;padding:9px 11px;background:rgba(255,255,255,.025);display:flex;justify-content:space-between;gap:12px;align-items:center}
 .signal-event small{display:block;color:var(--muted);font-size:10px}.signal-event b{font-size:11px}
+.signal-event-controls{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.signal-event-control-actions{display:flex;gap:8px;flex-wrap:wrap}.signal-event-control-actions .btn{padding:7px 12px;font-size:11px}
 .band-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .band-toolbar select{border:1px solid var(--line);background:rgba(6,13,24,.68);color:var(--text);padding:9px 12px;border-radius:10px}
 .band-row{cursor:pointer}.band-row.selected{background:rgba(112,157,236,.12)}
@@ -235,6 +236,7 @@ button,input,select,textarea{font:inherit}
   <div class="signal-grid" id="signalCards"><div class="signal-empty">پس از اجرای اسکن بازار، تحلیل BTC، ETH، DOGE و سایر ارزهای اصلی اینجا نمایش داده می‌شود.</div></div>
   <div class="card-head" style="margin-top:18px"><h2>گزارش سیگنال‌ها و هشدار تضعیف</h2><span class="sub">آخرین ۳۰ رویداد</span></div>
   <div class="signal-list" id="signalEventFeed"><div class="signal-empty">هنوز رویدادی ثبت نشده است.</div></div>
+  <div id="signalEventControls" class="signal-event-controls" aria-live="polite"></div>
   <div class="card-head" style="margin-top:20px"><div><h2>آرشیو و ارزیابی سیگنال‌ها</h2><div class="sub">ثبت مسیر قیمت تا TP1 / TP2 / SL · حالت پایه ۱۵m و حالت توسعه‌یافته ۱m</div></div><span class="pill" id="signalArchiveCount">۰ با TP1</span></div>
   <div class="strategy-option" id="signalPerformanceControl" style="margin:10px 0;border-color:rgba(138,183,255,.35);padding:14px">
    <label style="font-weight:700;font-size:1rem"><input type="checkbox" id="signalPerformanceToggle"> فعال‌سازی یک‌کلیکی Signal Performance Lab</label>
@@ -407,6 +409,10 @@ const majorSymbols=['BTC','ETH','BNB','SOL','XRP','DOGE','ADA','LINK','AVAX','LT
 const bandStepProfiles={BTC:{10:10,20:20},ETH:{10:10,20:20},DOGE:{10:0.001,20:0.002},BNB:{10:1,20:2},SOL:{10:0.5,20:1},XRP:{10:0.005,20:0.01},ADA:{10:0.0025,20:0.005},LINK:{10:0.1,20:0.2},AVAX:{10:0.1,20:0.2},LTC:{10:0.5,20:1},DOT:{10:0.025,20:0.05},TRX:{10:0.001,20:0.002},BCH:{10:1,20:2},UNI:{10:0.05,20:0.1},NEAR:{10:0.02,20:0.04},APT:{10:0.025,20:0.05},SUI:{10:0.01,20:0.02},ARB:{10:0.005,20:0.01},OP:{10:0.01,20:0.02},FIL:{10:0.025,20:0.05}};
 const signalState={events:[],last:{},archive:[]};
 const SIGNAL_EVENTS_KEY='capitalDesk.signalEvents.v06';
+const SIGNAL_EVENTS_INITIAL_VISIBLE=5;
+const SIGNAL_EVENTS_PAGE_SIZE=5;
+const SIGNAL_EVENTS_MAX_VISIBLE=30;
+let signalEventVisibleCount=SIGNAL_EVENTS_INITIAL_VISIBLE;
 const SIGNAL_LAST_KEY='capitalDesk.signalLast.v06';
 const SIGNAL_ARCHIVE_KEY='capitalDesk.signalArchive.v082';
 const BAND_SAMPLES_KEY='capitalDesk.bandSamples.v06';
@@ -899,7 +905,21 @@ function renderRangeAnalysis(){const rows=scannerState.majorRows||[],body=docume
 }
 function addSignalEvent(event){signalState.events.unshift(event);signalState.events=signalState.events.slice(0,100);safeStorageSet(SIGNAL_EVENTS_KEY,signalState.events);renderSignalEvents();if('Notification'in window&&Notification.permission==='granted')notifyBrowser(event)}
 function notifyBrowser(event){try{if(!('Notification'in window)||Notification.permission!=='granted')return;const n=new Notification(event.title,{body:event.body,tag:`ccd-${event.symbol}-${event.type}`,silent:false});n.onclick=()=>{window.focus();document.getElementById('signalCenter').scrollIntoView({behavior:'smooth'})}}catch(e){console.warn('Browser notification failed',e)}}
-function renderSignalEvents(){const el=document.getElementById('signalEventFeed');if(!signalState.events.length){el.innerHTML='<div class="signal-empty">هنوز سیگنال تازه یا هشدار تضعیفی ثبت نشده است.</div>';return}el.innerHTML=signalState.events.slice(0,30).map(e=>`<div class="signal-event"><div><b>${e.title}</b><small>${e.body}</small><small>${new Date(e.time).toLocaleString('fa-IR')}</small></div><span class="band-chip ${e.type==='WEAKENING'?'resistance':'support'}">${e.type==='WEAKENING'?'تضعیف':'سیگنال'}</span></div>`).join('')}
+function renderSignalEvents(){
+ const el=document.getElementById('signalEventFeed'),controls=document.getElementById('signalEventControls');
+ const total=Math.min(signalState.events.length,SIGNAL_EVENTS_MAX_VISIBLE);
+ if(!total){el.innerHTML='<div class="signal-empty">هنوز سیگنال تازه یا هشدار تضعیفی ثبت نشده است.</div>';controls.innerHTML='';return}
+ const visible=Math.min(signalEventVisibleCount,total);
+ el.innerHTML=signalState.events.slice(0,visible).map(e=>`<div class="signal-event"><div><b>${e.title}</b><small>${e.body}</small><small>${new Date(e.time).toLocaleString('fa-IR')}</small></div><span class="band-chip ${e.type==='WEAKENING'?'resistance':'support'}">${e.type==='WEAKENING'?'تضعیف':'سیگنال'}</span></div>`).join('');
+ const actions=[];
+ if(visible<total)actions.push(`<button class="btn" id="showMoreSignalEvents" type="button">نمایش بیشتر (${Math.min(SIGNAL_EVENTS_PAGE_SIZE,total-visible)} مورد)</button>`);
+ if(visible>SIGNAL_EVENTS_INITIAL_VISIBLE)actions.push('<button class="btn" id="showLessSignalEvents" type="button">نمایش کمتر</button>');
+ controls.innerHTML=`<span class="sub">نمایش ${visible} از ${total} گزارش اخیر</span>${actions.length?`<div class="signal-event-control-actions">${actions.join('')}</div>`:''}`;
+ const more=document.getElementById('showMoreSignalEvents');
+ if(more)more.onclick=()=>{signalEventVisibleCount=Math.min(SIGNAL_EVENTS_MAX_VISIBLE,signalEventVisibleCount+SIGNAL_EVENTS_PAGE_SIZE);renderSignalEvents()};
+ const less=document.getElementById('showLessSignalEvents');
+ if(less)less.onclick=()=>{signalEventVisibleCount=SIGNAL_EVENTS_INITIAL_VISIBLE;renderSignalEvents()};
+}
 function sendOneSignal(symbol){const r=(scannerState.majorRows||[]).find(x=>x.baseSymbol===symbol);if(!r||!r.signal||!['LONG','SHORT'].includes(r.signal.direction)||!r.signal.plan){toast('برای این ارز سیگنال تأییدشده‌ای وجود ندارد');return}const s=r.signal,now=Date.now();const body=`${symbol}/USDT ${s.direction==='LONG'?'خرید / LONG':'فروش / SHORT'} · امتیاز ${s.score}/100 · مرجع ${priceText(symbol,s.plan.entry,r.band?.step)} · حدضرر ${priceText(symbol,s.plan.stop,r.band?.step)} · هدف ۱ ${priceText(symbol,s.plan.target1,r.band?.step)} · هدف ۲ ${priceText(symbol,s.plan.target2,r.band?.step)}`;if('Notification'in window&&Notification.permission==='granted'){notifyBrowser({title:`سیگنال ${symbol}/USDT`,body,symbol,type:'MANUAL',time:now});archiveSignal(r,now,'MANUAL');toast('اعلان مرورگر ارسال و در آرشیو ثبت شد')}else{toast('ابتدا اعلان مرورگر را فعال کن')}}
 function renderSignalCards(){const el=document.getElementById('signalCards'),rows=(scannerState.majorRows||[]).slice();if(!rows.length){el.innerHTML='<div class="signal-empty">اطلاعات ارزهای اصلی هنوز دریافت نشده است.</div>';return}rows.sort((a,b)=>((b.signal?.direction==='LONG'||b.signal?.direction==='SHORT')?1:0)-((a.signal?.direction==='LONG'||a.signal?.direction==='SHORT')?1:0)||(b.signal?.score||0)-(a.signal?.score||0));el.innerHTML=rows.map(r=>{const s=r.signal||{},dir=s.direction||'WAIT',cls=dir==='LONG'?'long':dir==='SHORT'?'short':'wait',label=dir==='LONG'?'خرید / LONG':dir==='SHORT'?'فروش / SHORT':s.dataQuality==='aggregated'?'فقط رصد':'انتظار';const plan=s.plan;return `<div class="signal-card ${cls}"><div class="signal-top"><div><b>${r.baseSymbol}/USDT</b><div class="sub">${r.source} · قیمت ${priceText(r.baseSymbol,r.lastPrice,r.band?.step)}</div></div><span class="signal-dir ${cls}">${label}</span></div><div class="rowline"><span class="sub">امتیاز جهت غالب</span><b>${s.score||0}/100</b></div>${s.liveStrategy?'<div class="market-note">موتور '+(s.liveStrategy.mode==='adaptive'?'ADAPTIVE':'MULTI')+' · '+(s.liveStrategy.status==='unsupported'?'داده ناکافی':s.liveStrategy.regime)+' · '+(s.liveStrategy.selected||[]).map(k=>LIVE_STRATEGY_NAMES[k]).join(' + ')+' · '+(s.liveStrategy.direction||'WAIT')+' · LONG '+(s.liveStrategy.long??0)+' / SHORT '+(s.liveStrategy.short??0)+' · توافق '+(s.liveStrategy.votes?Math.round(s.liveStrategy.agreement*100)+'%':'—')+'</div>':''}${plan?`<div class="signal-values"><div><small>ورود مرجع</small><b>${priceText(r.baseSymbol,plan.entry,r.band?.step)}</b></div><div><small>حدضرر</small><b class="red">${priceText(r.baseSymbol,plan.stop,r.band?.step)}</b></div><div><small>هدف اول</small><b class="green">${priceText(r.baseSymbol,plan.target1,r.band?.step)}</b></div><div><small>هدف دوم</small><b class="green">${priceText(r.baseSymbol,plan.target2,r.band?.step)}</b></div></div>`:`<div class="market-note">${s.reason||'شرایط لازم برای سیگنال ورود کامل نیست.'}</div>`}<div class="market-note">${(s.reasons||[]).slice(0,2).join(' · ')||'نیازمند تأیید بیشتر'} ${(s.risks||[]).length?' · ریسک: '+s.risks.slice(0,1).join(''):''}</div><div class="rowline" style="margin-top:8px"><span class="sub">تغییر ۱۵m ${s.change15==null?'—':pct(s.change15)} · ۱h ${s.change1h==null?'—':pct(s.change1h)}</span>${plan?`<button class="btn" data-notify-symbol="${r.baseSymbol}">ارسال اعلان</button>`:''}</div></div>`}).join('');el.querySelectorAll('[data-notify-symbol]').forEach(b=>b.onclick=()=>sendOneSignal(b.dataset.notifySymbol));}
 function archiveSignal(row,time=Date.now(),origin='AUTO'){
