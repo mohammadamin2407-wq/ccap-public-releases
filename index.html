@@ -1481,13 +1481,13 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  panel.innerHTML=
  '<div class="card-head"><div><h2>Cloud Engine · پایش مستقل بازار</h2><div class="sub">اسکن سمت سرور؛ حتی وقتی اپ بسته است. هیچ سفارش واقعی ثبت نمی‌شود.</div></div><span class="pill" id="ccapCloudState">اتصال برقرار نشده</span></div>'+
  '<div class="market-toolbar" style="margin-top:12px">'+
- '<label class="sub" for="ccapCloudUrl">آدرس Cloudflare Worker</label>'+
- '<input id="ccapCloudUrl" type="url" inputmode="url" placeholder="https://ccap-market-engine.نام-حساب.workers.dev" autocomplete="url" style="min-width:min(100%,360px)">'+
- '<label class="sub" for="ccapCloudToken">کلید امنیتی (اعلان‌ها و همگام‌سازی)</label>'+
- '<input id="ccapCloudToken" type="password" autocomplete="off" placeholder="CCAP_PUSH_TOKEN" style="min-width:min(100%,250px)">'+
- '<button class="btn primary" id="ccapCloudConnect">اتصال و دریافت داده</button>'+
+ '<label class="sub" for="ccapCloudUrl" style="display:none">آدرس Cloudflare Worker</label>'+
+ '<input id="ccapCloudUrl" type="url" inputmode="url" placeholder="اتصال خودکار Cloud Engine" autocomplete="url" style="display:none">'+
+ '<label class="sub" for="ccapCloudToken" style="display:none">کلید امنیتی (اعلان‌ها و همگام‌سازی)</label>'+
+ '<input id="ccapCloudToken" type="password" autocomplete="off" placeholder="مدیریت سمت سرور" style="display:none">'+
+ '<button class="btn primary" id="ccapCloudConnect" style="display:none">اتصال خودکار</button>'+
  '<button class="btn" id="ccapCloudRefresh">بروزرسانی اکنون</button>'+
- '<button class="btn" id="ccapCloudPush">فعال‌سازی اعلان‌ها</button></div>'+
+ '<button class="btn" id="ccapCloudPush" style="display:none">فعال‌سازی اعلان‌ها</button></div>'+
  '<div class="market-toolbar" style="margin-top:10px">'+
  '<label class="sub" for="ccapBybitMode">محیط حساب Bybit</label>'+
  '<select id="ccapBybitMode" style="min-width:min(100%,190px)"><option value="demo">Demo آزمایشی</option><option value="live">Live واقعی · فقط خواندن</option></select>'+
@@ -1505,7 +1505,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  root.insertBefore(panel,root.firstElementChild);
  const el=id=>document.getElementById(id);
  const state=(text,ok)=>{el('ccapCloudState').textContent=text;el('ccapCloudState').style.borderColor=ok?'rgba(75,224,173,.4)':'rgba(241,201,133,.35)';el('ccapCloudState').style.color=ok?'#8aefc9':'#f1c985'};
- const safeBase=()=>String(el('ccapCloudUrl').value||'').trim().replace(/\/+$/,'');
+ const safeBase=()=>DEFAULT_WORKER_URL.replace(/\/+$/,'');
  function originProblem(){
   if(location.protocol==='file:')return 'این نسخه از فایل محلی باز شده است؛ مرورگر مبدأ آن را null می‌فرستد و Worker این مبدأ را عمداً به‌دلیل محدودیت CORS نمی‌پذیرد.';
   if(!['https://mohammadamin2407-wq.github.io','http://localhost:5173','http://127.0.0.1:5173'].includes(location.origin))return 'این دامنه برای اتصال به Worker مجاز نیست. نسخهٔ رسمی HTTPS یا محیط توسعه روی localhost:5173 را باز کن.';
@@ -1522,7 +1522,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
   if(!originIssue&&/failed to fetch|networkerror/i.test(message))message='مرورگر به Worker دسترسی نگرفت. نشانی باید با https:// شروع شود؛ اینترنت و آدرس Worker را بررسی کن.';
   status.textContent='اتصال برقرار نشد: '+message;
  }
- function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Worker باید یک URL معتبر HTTPS باشد');return value}
+ function endpoint(){const value=safeBase();if(!/^https:\/\/[a-z0-9.-]+(?::\d+)?$/i.test(value))throw new Error('آدرس Cloud Engine پیش‌فرض معتبر نیست');return value}
  function pushToken(){return String(el('ccapCloudToken').value||'').trim()}
  function bybitMode(){return el('ccapBybitMode').value==='live'?'live':'demo'}
  function bybitControlToken(){return String(el('ccapBybitControlToken').value||'').trim()}
@@ -1532,7 +1532,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
   if(path==='/api/bybit/demo/check'||path==='/api/bybit/live/check'){
    const token=bybitControlToken();if(!token)throw new Error('کلید کنترل اتصال Bybit را وارد کن.');headers.Authorization='Bearer '+token;
   }else if(['/api/subscribe','/api/unsubscribe','/api/performance/sync'].includes(path)){
-   const token=pushToken();if(!token)throw new Error('برای همگام‌سازی Cloud Engine، کلید CCAP_PUSH_TOKEN را وارد کن.');headers.Authorization='Bearer '+token;
+   const token=pushToken();if(token)headers.Authorization='Bearer '+token;
   }
   const response=await fetch(endpoint()+path,{...options,cache:'no-store',headers});let data={};try{data=await response.json()}catch(e){}
   if(!response.ok||data.ok===false)throw new Error(data.error||data.message||('HTTP '+response.status));return data;
@@ -1620,7 +1620,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
    healthData=await api('/api/health');
    try{const k=await api('/api/public-key');vapidPublicKey=k.publicKey||null}catch(e){vapidPublicKey=null}
    try{await refreshBybitStatus()}catch(e){el('ccapBybitStatus').textContent='برای آزمون اتصال Bybit، ابتدا نسخهٔ جدید Worker را Deploy کن.';el('ccapBybitCheck').disabled=true}
-   el('ccapCloudStatus').textContent='Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن: '+healthData.cron+' · ارزیابی پس‌زمینه معلق: '+(healthData.pendingEvaluations||0)+' · '+(healthData.pushEnabled?'اعلان و همگام‌سازی فعال':'حالت فقط‌خواندنی؛ اعلان و همگام‌سازی نیازمند کلید امنیتی است');
+   el('ccapCloudStatus').textContent='اتصال خودکار موفق؛ Worker نسخه '+healthData.workerVersion+' پاسخ می‌دهد. اسکن زمان‌بندی‌شده: '+healthData.cron+' · ارزیابی‌های معلق: '+(healthData.pendingEvaluations||0)+' · پایش بازار بدون واردکردن آدرس Worker یا رمز فعال است.';
    await refreshSnapshot();
    window.ccapCloudSyncPerformance=payload=>api('/api/performance/sync',{method:'POST',body:JSON.stringify(payload)});
    window.dispatchEvent(new Event('ccap-cloud-performance-ready'));
@@ -1666,7 +1666,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  el('ccapCloudToken').addEventListener('change',()=>localStorage.setItem(TOKEN_KEY,pushToken()));
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&apiBase)refreshSnapshot()});
  window.addEventListener('online',()=>{if(apiBase)connect()});
- try{const saved=localStorage.getItem(API_KEY);el('ccapCloudUrl').value=saved||DEFAULT_WORKER_URL;connect()}catch(e){}
+ try{el('ccapCloudUrl').value=DEFAULT_WORKER_URL;connect()}catch(e){}
 })();
 </script>
 <script type="module" src="./wallet.js"></script>
