@@ -1503,6 +1503,7 @@ el('strategyMode').addEventListener('change',()=>{el('strategyChoices').style.op
  '<div id="ccapCloudRows" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px"></div>'+
  '<div class="sub" id="ccapCloudFootnote" style="margin-top:10px">امتیازها الگوریتمی و آزمایشی‌اند؛ احتمال موفقیت محسوب نمی‌شوند. منبع کندل و داده‌های مشتقه باید در هر اسکن در دسترس باشند.</div>';
  root.insertBefore(panel,root.firstElementChild);
+ if(new URLSearchParams(location.search).get('owner')==='1'){const ownerMark=document.createElement('span');ownerMark.className='pill';ownerMark.textContent='دسترسی سریع مالک';ownerMark.style.margin='8px 0';panel.insertBefore(ownerMark,panel.children[1]||null);document.title='CCAP · Owner';}
  const el=id=>document.getElementById(id);
  const state=(text,ok)=>{el('ccapCloudState').textContent=text;el('ccapCloudState').style.borderColor=ok?'rgba(75,224,173,.4)':'rgba(241,201,133,.35)';el('ccapCloudState').style.color=ok?'#8aefc9':'#f1c985'};
  const safeBase=()=>DEFAULT_WORKER_URL.replace(/\/+$/,'');
